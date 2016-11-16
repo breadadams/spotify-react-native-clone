@@ -6,9 +6,11 @@ import {
 	Text,
 	Linking,
 	Image,
-	StyleSheet
+	StyleSheet,
+	AsyncStorage
 } from 'react-native'
 
+import { connect } from 'react-redux'
 import CookieManager from 'react-native-cookies'
 import { Actions } from 'react-native-router-flux'
 
@@ -16,7 +18,7 @@ import SpotifyWebApi from '../services/Spotify'
 
 import PullBlurHeader from '../components/PullBlurHeader'
 
-export default class Home extends Component {
+class Home extends Component {
 
 	constructor() {
 		super()
@@ -46,17 +48,19 @@ export default class Home extends Component {
 	}
 
 	componentWillMount() {
-		CookieManager.getAll((err, res) => {
-			if ( res.refresh_token ) {
-				console.log('token cookies exist')
-				this.setState({
-					refreshToken: res.refresh_token.value,
-				}, () => {
-					console.log('refreshing token')
-					SpotifyWebApi.refreshAccessToken(this.state.refreshToken, (res) => {
-						this.setState({
-							accessToken: res,
-						}, () => {
+		// console.log(this.props)
+		AsyncStorage.getItem('refresh_token', (err, result) => {
+			if (result) {
+				console.log('retrieved refresh_token')
+				SpotifyWebApi.refreshAccessToken(result, (accessToken) => {
+					AsyncStorage.setItem('access_token', accessToken, () => {
+
+						const tokens = {
+							access_token: accessToken,
+							refresh_token: result
+						}
+
+						this.props.setUserTokens(tokens, () => {
 							SpotifyWebApi.getProfileDetails(this.state.accessToken, (res) => {
 								if ( !res.error ) {
 									this.setState({
@@ -74,20 +78,6 @@ export default class Home extends Component {
 						})
 					})
 				})
-			} else {
-				Linking.addEventListener('url', (event) => {
-					console.log(event.url)
-					if ( event.url ) {
-						SpotifyWebApi.getAccessToken(event, (tokens) => {
-							this.setState({
-								accessToken: tokens.access_token,
-								refreshToken: tokens.refresh_token,
-							})
-						})
-					} else {
-						Actions.splashScreen()
-					}
-				});
 			}
 		})
 	}
@@ -118,9 +108,9 @@ export default class Home extends Component {
 					onPress={() => Actions.splashScreen()}>{`Spotify Login`}</Text>
 
 				<Text>ACCESS TOKEN:</Text>
-				<Text>{this.state.accessToken}</Text>
+				<Text>{this.props.accessToken}</Text>
 				<Text style={{marginTop: 20,}}>REFRESH TOKEN:</Text>
-				<Text style={{marginBottom: 400}}>{this.state.refreshToken}</Text>
+				<Text style={{marginBottom: 400}}>{this.props.refreshToken}</Text>
 
 			</ScrollView>
 		)
@@ -131,3 +121,12 @@ const styles = StyleSheet.create({
 
 
 })
+
+function mapStateToProps(state) {
+	return {
+		accessToken: state.userTokens.accessToken,
+		refreshToken: state.userTokens.refreshToken
+	}
+}
+
+export default connect(mapStateToProps)(Home)

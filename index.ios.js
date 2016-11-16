@@ -1,127 +1,35 @@
 import React, { Component } from 'react';
 import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-  Linking
+  AppRegistry
 } from 'react-native'
 
-import { Router, Scene } from 'react-native-router-flux'
-import CookieManager from 'react-native-cookies'
+import { Provider } from 'react-redux'
+import { createStore, applyMiddleware, compose } from 'redux'
+import thunkMiddleware from 'redux-thunk'
+import createLogger from 'redux-logger'
 
-import Home from './app/screens/Home'
-import Playlists from './app/screens/Playlists'
-import Splash from './app/screens/Splash'
+import reducer from './app/reducers'
+import AppContainer from './app/containers/AppContainer'
 
-import SpotifyWebApi from './app/services/Spotify'
+const loggerMiddleware = createLogger({ predicate: (getState, action) => __DEV__ })
 
-const tabicon = ({selected, title}) => {
-	return(
-		<Text style={{color: selected ? '#1ED760' : 'white' }}>{title}</Text>
+function configureStore(initialState) {
+	const enhancer = compose(
+		applyMiddleware(
+			thunkMiddleware,
+			loggerMiddleware
+		),
 	)
+	return createStore(reducer, initialState, enhancer)
 }
 
-export default class spotify_rn extends Component {
+const store = configureStore({})
 
-	constructor() {
-		super()
-		this.state = {
-			navbarOpacity: 0,
-			accessToken: '',
-			refreshToken: '',
-		}
-	}
+const App = () => (
+	<Provider
+		store={store}>
+		<AppContainer/>
+	</Provider>
+)
 
-	componentDidMount() {
-		StatusBar.setBarStyle('light-content', true);
-	}
-
-	transitionNavbar(value) {
-		// console.log('scrolled: '+value)
-		// this.setState({navbarOpacity: (value/10)})
-	}
-
-	render() {
-		return (
-			<Router>
-				<Scene
-					key='root'>
-
-					<Scene
-						key='tabbar'
-						tabs
-						tabBarStyle={styles.tabBar}>
-
-						<Scene
-							key='homeTab'
-							icon={tabicon}
-							title='Home'
-							navigationBarStyle={[styles.mainNavbar, styles.mainNavbarStartOpaque]}
-							titleStyle={styles.mainNavbarTitle}
-							initial>
-
-							<Scene
-								key='homeScreen'
-								component={Home}
-								title='Home'
-								transitionNavbar={(value) => {this.transitionNavbar(value)}}
-								accessToken={this.state.accessToken}
-								refreshToken={this.state.refreshToken}/>
-
-						</Scene>
-
-						<Scene
-							key='browseTab'
-							icon={tabicon}
-							title='Playlists'
-							navigationBarStyle={styles.mainNavbar}
-							titleStyle={styles.mainNavbarTitle}>
-
-							<Scene
-								key='browseScreen'
-								component={Playlists}
-								title='Playlists'/>
-
-						</Scene>
-
-					</Scene>
-
-					<Scene
-						key='splashScreen'
-						component={Splash}
-						hideNavBar
-						hideTabBar
-						direction='vertical'/>
-
-				</Scene>
-			</Router>
-		)
-	}
-}
-
-const styles = StyleSheet.create({
-	tabBar: {
-		borderTopWidth: .5,
-		borderColor: '#101011',
-		backgroundColor: '#222327',
-		opacity: 1
-	},
-
-	mainNavbar: {
-		backgroundColor: 'rgba(34, 35, 39, .8)',
-		borderBottomWidth: 0,
-		opacity: 1,
-	},
-
-	mainNavbarStartOpaque: {
-		opacity: 0,
-	},
-
-	mainNavbarTitle: {
-		color: '#ffffff',
-	},
-});
-
-AppRegistry.registerComponent('spotify_rn', () => spotify_rn);
+AppRegistry.registerComponent('spotify_rn', () => App);

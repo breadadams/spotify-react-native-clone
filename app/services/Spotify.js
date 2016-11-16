@@ -2,7 +2,8 @@
 import React, { Component } from 'react'
 import {
 	View,
-	Linking
+	Linking,
+	AsyncStorage
 } from 'react-native'
 
 import queryString from 'query-string'
@@ -21,7 +22,7 @@ const scope = 'user-read-private';
 const spotifyAccountURL = 'https://accounts.spotify.com/authorize?'
 const spotifyTokenURL = 'https://accounts.spotify.com/api/token'
 
-export default class SpotifyWebApi extends Component {
+class SpotifyWebApi {
 
 	static generateRandomString(length) {
 		var text = '';
@@ -33,7 +34,7 @@ export default class SpotifyWebApi extends Component {
 		return text;
 	}
 
-	static authenticate() {
+	static authenticate(callback) {
 
 		CookieManager.clearAll((err, res) => {
 			console.log('cookies cleared, authenticating time!')
@@ -41,18 +42,8 @@ export default class SpotifyWebApi extends Component {
 
 		var state = SpotifyWebApi.generateRandomString(16)
 
-		// set a cookie
-		CookieManager.set({
-			name: stateKey,
-			value: state,
-			domain: cookie_domain,
-			origin: 'spotifyrn',
-			path: '/',
-			version: '1',
-			expiration: '2017-05-30T12:30:00.00-05:00'
-		}, (err, res) => {
-			console.log('cookie set!');
-
+		// Set spotify_auth_state in AsyncStorage
+		AsyncStorage.setItem(stateKey, state, () => {
 			fetch(spotifyAccountURL+
 				queryString.stringify({
 					response_type: 'code',
@@ -66,12 +57,25 @@ export default class SpotifyWebApi extends Component {
 				if ( response.ok ) {
 					Linking.canOpenURL(response.url).then(supported => {
 						if( supported ) {
+							SpotifyWebApi.listenForResponse(callback)
 							return Linking.openURL(response.url)
 						}
 					}).catch(err => console.error(err))
 				}
 			}).done()
-		});	
+		})
+	}
+
+	static listenForResponse(callback) {
+		Linking.addEventListener('url', (event) => {
+			if ( event.url ) {
+				SpotifyWebApi.getAccessToken(event, (tokens) => {
+					if ( callback && tokens ) {
+						return callback(tokens)
+					}
+				})
+			}
+		});
 	}
 
 	static getAccessToken(event, callback) {
@@ -79,11 +83,66 @@ export default class SpotifyWebApi extends Component {
 		if ( event ) {
 			const queryVars = queryString.parse(event.url)
 
-			CookieManager.getAll((err, res) => {
-				if ( res[stateKey].value == queryVars.state ) {
-			  		CookieManager.clearByName(stateKey, (err, res) => {
+			// CookieManager.getAll((err, res) => {
+			// 	if ( res[stateKey].value == queryVars.state ) {
+			//   		CookieManager.clearByName(stateKey, (err, res) => {
 
-				  		fetch(spotifyTokenURL, {
+			// 	  		fetch(spotifyTokenURL, {
+			// 				method: 'POST',
+			// 				headers: {
+			// 					'Content-Type':'application/x-www-form-urlencoded',
+			// 					'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+			// 				},
+			// 				body: queryString.stringify({
+			// 					code: queryVars['spotifyrn:/?code'],
+			// 					redirect_uri: redirect_uri,
+			// 			        grant_type: 'authorization_code'
+			// 				})
+			// 			})
+			// 			.then(res => res.json())
+			// 			.then(res => {
+			// 				console.log('saving token cookies')
+			// 		        if ( res.access_token && res.refresh_token ) {
+			// 		        	CookieManager.set({
+			// 						name: 'access_token',
+			// 						value: res.access_token,
+			// 						domain: cookie_domain,
+			// 						origin: 'spotifyrn',
+			// 						path: '/',
+			// 						version: '1',
+			// 						expiration: '2017-05-30T12:30:00.00-05:00'
+			// 					}, () => {
+			// 			        	CookieManager.set({
+			// 							name: 'refresh_token',
+			// 							value: res.refresh_token,
+			// 							domain: cookie_domain,
+			// 							origin: 'spotifyrn',
+			// 							path: '/',
+			// 							version: '1',
+			// 							expiration: '2017-05-30T12:30:00.00-05:00'
+			// 						}, () => {
+
+			// 							var tokens = {
+			// 								access_token: res.access_token,
+			// 								refresh_token: res.refresh_token,
+			// 							}
+
+			// 				        	return callback(tokens)
+			// 				        })
+			// 			        })
+			// 		        }
+			// 		    }).done()
+
+			//   		})
+			//   	} else {
+			//   		// Do something ???
+			//   	}
+			// })
+
+			AsyncStorage.getItem(stateKey, (err, result) => {
+				if ( result == queryVars.state ) {
+					AsyncStorage.removeItem(stateKey, (err, result) => {
+						fetch(spotifyTokenURL, {
 							method: 'POST',
 							headers: {
 								'Content-Type':'application/x-www-form-urlencoded',
@@ -97,40 +156,24 @@ export default class SpotifyWebApi extends Component {
 						})
 						.then(res => res.json())
 						.then(res => {
-							console.log('saving token cookies')
+							console.log('saving tokens')
 					        if ( res.access_token && res.refresh_token ) {
-					        	CookieManager.set({
-									name: 'access_token',
-									value: res.access_token,
-									domain: cookie_domain,
-									origin: 'spotifyrn',
-									path: '/',
-									version: '1',
-									expiration: '2017-05-30T12:30:00.00-05:00'
-								}, () => {
-						        	CookieManager.set({
-										name: 'refresh_token',
-										value: res.refresh_token,
-										domain: cookie_domain,
-										origin: 'spotifyrn',
-										path: '/',
-										version: '1',
-										expiration: '2017-05-30T12:30:00.00-05:00'
-									}, () => {
+					        	AsyncStorage.setItem('access_token', res.access_token, () => {
+					        		AsyncStorage.setItem('refresh_token', res.refresh_token, () => {
+					        			if ( callback ) {
+					        				var tokens = {
+												access_token: res.access_token,
+												refresh_token: res.refresh_token,
+											}
 
-										var tokens = {
-											access_token: res.access_token,
-											refresh_token: res.refresh_token,
-										}
-
-							        	return callback(tokens)
-							        })
-						        })
+								        	return callback(tokens)
+					        			}
+					        		})
+					        	})
 					        }
 					    }).done()
-
-			  		})
-			  	} else {
+				    })
+				} else {
 			  		// Do something ???
 			  	}
 			})
@@ -156,19 +199,13 @@ export default class SpotifyWebApi extends Component {
 			.then(res => {
 				console.log('getting new access token')
 		        if ( res.access_token ) {
-		        	CookieManager.set({
-						name: 'access_token',
-						value: res.access_token,
-						domain: cookie_domain,
-						origin: 'spotifyrn',
-						path: '/',
-						version: '1',
-						expiration: '2017-05-30T12:30:00.00-05:00'
-					}, () => {
-			        	return callback(res.access_token)
+		        	AsyncStorage.setItem('access_token', res.access_token, () => {
+			        	if ( callback ) {
+			        		return callback(res.access_token)
+			        	}
 			        })
 		        } else {
-		        	
+		        	// No access token returned
 		        }
 		    }).done()
 	}
@@ -243,5 +280,6 @@ export default class SpotifyWebApi extends Component {
 	    }).done()
 	}
 
-
 }
+
+export default SpotifyWebApi

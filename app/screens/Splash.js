@@ -17,8 +17,10 @@ import SpotifyWebApi from '../services/Spotify'
 export default class Splash extends Component {
 
 	authorizeUser() {
-		SpotifyWebApi.authenticate()
-		Actions.homeScreen({type: 'replace'})
+		SpotifyWebApi.authenticate(tokens => {
+			this.props.setUserTokens(tokens)
+			Actions.pop()
+		})
 	}
 
 	render() {
