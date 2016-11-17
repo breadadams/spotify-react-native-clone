@@ -1,5 +1,4 @@
 'use strict'
-import React, { Component } from 'react'
 import {
 	View,
 	Linking,
@@ -7,7 +6,6 @@ import {
 } from 'react-native'
 
 import queryString from 'query-string'
-import CookieManager from 'react-native-cookies'
 
 var Buffer = require('buffer/').Buffer
 
@@ -36,40 +34,45 @@ class SpotifyWebApi {
 
 	static authenticate(callback) {
 
-		CookieManager.clearAll((err, res) => {
-			console.log('cookies cleared, authenticating time!')
-		})
+		const keysToRemove = [
+			stateKey,
+			'access_token',
+			'refresh_token'
+		]
 
-		var state = SpotifyWebApi.generateRandomString(16)
+		AsyncStorage.multiRemove(keysToRemove, (err) => {
 
-		// Set spotify_auth_state in AsyncStorage
-		AsyncStorage.setItem(stateKey, state, () => {
-			fetch(spotifyAccountURL+
-				queryString.stringify({
-					response_type: 'code',
-					client_id: client_id,
-					scope: scope,
-					redirect_uri: redirect_uri,
-					state: state
-				})
-			)
-			.then((response) => {
-				if ( response.ok ) {
-					Linking.canOpenURL(response.url).then(supported => {
-						if( supported ) {
-							SpotifyWebApi.listenForResponse(callback)
-							return Linking.openURL(response.url)
-						}
-					}).catch(err => console.error(err))
-				}
-			}).done()
+			var state = SpotifyWebApi.generateRandomString(16)
+
+			// Set spotify_auth_state in AsyncStorage
+			AsyncStorage.setItem(stateKey, state, () => {
+				fetch(spotifyAccountURL+
+					queryString.stringify({
+						response_type: 'code',
+						client_id: client_id,
+						scope: scope,
+						redirect_uri: redirect_uri,
+						state: state
+					})
+				)
+				.then((response) => {
+					if ( response.ok ) {
+						Linking.canOpenURL(response.url).then(supported => {
+							if( supported ) {
+								SpotifyWebApi.listenForResponse(callback)
+								return Linking.openURL(response.url)
+							}
+						}).catch(err => console.error(err))
+					}
+				}).done()
+			})
 		})
 	}
 
 	static listenForResponse(callback) {
 		Linking.addEventListener('url', (event) => {
 			if ( event.url ) {
-				SpotifyWebApi.getAccessToken(event, (tokens) => {
+				SpotifyWebApi.getAccessTokenFromScheme(event, (tokens) => {
 					if ( callback && tokens ) {
 						return callback(tokens)
 					}
@@ -78,66 +81,10 @@ class SpotifyWebApi {
 		});
 	}
 
-	static getAccessToken(event, callback) {
+	static getAccessTokenFromScheme(event, callback) {
 
 		if ( event ) {
 			const queryVars = queryString.parse(event.url)
-
-			// CookieManager.getAll((err, res) => {
-			// 	if ( res[stateKey].value == queryVars.state ) {
-			//   		CookieManager.clearByName(stateKey, (err, res) => {
-
-			// 	  		fetch(spotifyTokenURL, {
-			// 				method: 'POST',
-			// 				headers: {
-			// 					'Content-Type':'application/x-www-form-urlencoded',
-			// 					'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-			// 				},
-			// 				body: queryString.stringify({
-			// 					code: queryVars['spotifyrn:/?code'],
-			// 					redirect_uri: redirect_uri,
-			// 			        grant_type: 'authorization_code'
-			// 				})
-			// 			})
-			// 			.then(res => res.json())
-			// 			.then(res => {
-			// 				console.log('saving token cookies')
-			// 		        if ( res.access_token && res.refresh_token ) {
-			// 		        	CookieManager.set({
-			// 						name: 'access_token',
-			// 						value: res.access_token,
-			// 						domain: cookie_domain,
-			// 						origin: 'spotifyrn',
-			// 						path: '/',
-			// 						version: '1',
-			// 						expiration: '2017-05-30T12:30:00.00-05:00'
-			// 					}, () => {
-			// 			        	CookieManager.set({
-			// 							name: 'refresh_token',
-			// 							value: res.refresh_token,
-			// 							domain: cookie_domain,
-			// 							origin: 'spotifyrn',
-			// 							path: '/',
-			// 							version: '1',
-			// 							expiration: '2017-05-30T12:30:00.00-05:00'
-			// 						}, () => {
-
-			// 							var tokens = {
-			// 								access_token: res.access_token,
-			// 								refresh_token: res.refresh_token,
-			// 							}
-
-			// 				        	return callback(tokens)
-			// 				        })
-			// 			        })
-			// 		        }
-			// 		    }).done()
-
-			//   		})
-			//   	} else {
-			//   		// Do something ???
-			//   	}
-			// })
 
 			AsyncStorage.getItem(stateKey, (err, result) => {
 				if ( result == queryVars.state ) {
@@ -184,35 +131,35 @@ class SpotifyWebApi {
 	}
 
 	static refreshAccessToken(refreshToken, callback) {
-		fetch(spotifyTokenURL, {
-				method: 'POST',
-				headers: {
-					'Content-Type':'application/x-www-form-urlencoded',
-					'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-				},
-				body: queryString.stringify({
-			        grant_type: 'refresh_token',
-			        refresh_token: refreshToken,
-				})
+		return fetch(spotifyTokenURL, {
+			method: 'POST',
+			headers: {
+				'Content-Type':'application/x-www-form-urlencoded',
+				'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+			},
+			body: queryString.stringify({
+		        grant_type: 'refresh_token',
+		        refresh_token: refreshToken,
 			})
-			.then(res => res.json())
-			.then(res => {
-				console.log('getting new access token')
-		        if ( res.access_token ) {
-		        	AsyncStorage.setItem('access_token', res.access_token, () => {
-			        	if ( callback ) {
-			        		return callback(res.access_token)
-			        	}
-			        })
-		        } else {
-		        	// No access token returned
-		        }
-		    }).done()
+		})
+		.then(res => res.json())
+		.then(res => {
+			console.log('getting new access token')
+	        if ( res.access_token ) {
+	        	AsyncStorage.setItem('access_token', res.access_token, () => {
+		        	if ( callback ) {
+		        		return callback(res.access_token)
+		        	}
+		        })
+	        } else {
+	        	// No access token returned
+	        }
+	    })
 	}
 
 	static getProfileDetails(accessToken, callback) {
 
-		fetch('https://api.spotify.com/v1/me', {
+		return fetch('https://api.spotify.com/v1/me', {
 			method: 'GET',
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
@@ -223,11 +170,11 @@ class SpotifyWebApi {
 	        if ( res && callback ) {
 	        	return callback(res)
 			}    	
-	    }).done()
+	    })
 	}
 
 	static getPlaylists(accessToken) {
-		fetch('https://api.spotify.com/v1/me/playlists', {
+		return fetch('https://api.spotify.com/v1/me/playlists', {
 			method: 'GET',
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
@@ -238,7 +185,7 @@ class SpotifyWebApi {
 	        if ( res ) {
 	        	console.log(res)
 	        }
-	    }).done()
+	    })
 	}
 
 	static getFeaturedPlaylists(accessToken, countryCode, callback) {
@@ -251,7 +198,7 @@ class SpotifyWebApi {
 			countryCodeQuery = '';
 		}
 
-		fetch('https://api.spotify.com/v1/browse/featured-playlists' + countryCodeQuery, {
+		return fetch('https://api.spotify.com/v1/browse/featured-playlists' + countryCodeQuery, {
 			method: 'GET',
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
@@ -260,13 +207,13 @@ class SpotifyWebApi {
 		.then(res => res.json())
 		.then(res => {
 	        if ( res && callback ) {
-	        	return callback(res)
+	        	callback(res)
 	        }
-	    }).done()
+	    })
 	}
 
 	static getCategories(accessToken, callback) {
-		fetch('https://api.spotify.com/v1/browse/categories', {
+		return fetch('https://api.spotify.com/v1/browse/categories', {
 			method: 'GET',
 			headers: {
 				'Authorization': 'Bearer ' + accessToken
@@ -275,9 +222,9 @@ class SpotifyWebApi {
 		.then(res => res.json())
 		.then(res => {
 	        if ( res && callback ) {
-	        	return callback(res)
+	        	callback(res)
 	        }
-	    }).done()
+	    })
 	}
 
 }
