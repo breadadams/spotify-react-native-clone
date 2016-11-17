@@ -4,23 +4,31 @@ import {
 	View,
 	Image,
 	Text,
+	TouchableOpacity,
 	StyleSheet
 } from 'react-native'
+
+const HEADER_HEIGHT = 300
+const IMAGE_BLUR = 25
 
 export default class PullBlurHeader extends Component {
 
 	constructor() {
 		super()
 		this.state = {
-			initialImgBlur: 15,
-			imgBlur: 15,
+			initialImgBlur: IMAGE_BLUR,
+			imgBlur: IMAGE_BLUR,
 		}
 	}
 
 	setImageBlur() {
-		if ( Math.floor(this.state.initialImgBlur + (this.props.topScroll / 2)) <= 0 ) {
+		if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= 0 ) {
 			this.setState({
-				imgBlur: Math.floor(this.state.initialImgBlur + (this.props.topScroll / 4))
+				imgBlur: Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2))
+			})
+		} else if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) < 0 ) {
+			this.setState({
+				imgBlur: 0,
 			})
 		}
 	}
@@ -32,37 +40,38 @@ export default class PullBlurHeader extends Component {
 	render() {
 		return (
 			<View
-				style={[styles.headerOuterWrap, {
-					transform: [{translateY: this.props.topScroll - (this.props.topScroll / -5)}]
-				}]}
+				style={styles.headerOuterWrap}
 				onLayout={this.props.onLayout}>
-				<Image
-					style={[
-						styles.headerImgWrap,
-					]}
-					resizeMode='cover'
-					blurRadius={this.state.imgBlur}
-					source={{uri: this.props.img}}/>
 
 				<View
-					style={{
-						height: this.props.topScroll < 0 ? (this.props.topScroll * -1.15) : 0,
-					}}/>
+					style={[styles.headerInnerWrap, {
+						transform: [{
+							translateY: this.props.topScroll - (this.props.topScroll / -5)
+						}],
+						height: this.props.topScroll < 0 ? HEADER_HEIGHT + (this.props.topScroll * -1.2) : HEADER_HEIGHT,
+					}]}>
 
-				<View
-					style={{
-						transform: [{translateY: this.props.topScroll * -1}],
-						opacity: (1 - ((this.props.topScroll * -1)/40))
-					}}>
 					<Image
-						style={styles.headerImg}
+						style={styles.headerImgWrap}
 						resizeMode='cover'
+						blurRadius={this.state.imgBlur}
 						source={{uri: this.props.img}}/>
 
-					<Text
-						style={styles.headerTitle}>
-						{this.props.title}
-					</Text>
+					<View
+						style={{
+							transform: [{translateY: this.props.topScroll * -.1}],
+							opacity: 1 - (this.props.topScroll/-40)
+						}}>
+						<Image
+							style={styles.headerImg}
+							resizeMode='cover'
+							source={{uri: this.props.img}}/>
+
+						<Text
+							style={styles.headerTitle}>
+							{this.props.title}
+						</Text>
+					</View>
 				</View>
 			</View>
 		)
@@ -78,13 +87,20 @@ PullBlurHeader.propTypes = {
 
 const styles = StyleSheet.create({
 	headerOuterWrap: {
-		paddingVertical: 60,
-		backgroundColor: '#0a0a0a',
-		alignItems: 'center',
+		height: HEADER_HEIGHT,
+		backgroundColor: '#222222',
+		position: 'relative',
+	},
+
+	headerInnerWrap: {
 		position: 'absolute',
 		left: 0,
 		right: 0,
 		top: 0,
+		bottom: 0,
+		alignItems: 'stretch',
+		justifyContent: 'center',
+		backgroundColor: 'red',
 	},
 
 	headerImgWrap: {
@@ -101,6 +117,7 @@ const styles = StyleSheet.create({
 		borderRadius: 50,
 		marginBottom: 10,
 		backgroundColor: '#adadad',
+		alignSelf: 'center',
 	},
 
 	headerTitle: {
