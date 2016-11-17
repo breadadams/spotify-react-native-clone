@@ -76,7 +76,7 @@ export default class VerticalBlockList extends Component {
 
 const styles = StyleSheet.create({
 	rowWrap: {
-		paddingTop: 10,
+		paddingTop: 15,
 	},
 
 	rowTitle: {
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
 
 	scrollListItem: {
 		// width: 150,
-		height: 150,
+		height: 160,
 		flexBasis: 160,
 		flex: 1,
 		backgroundColor: 'green',
