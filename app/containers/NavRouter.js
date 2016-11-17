@@ -44,10 +44,6 @@ class NavRouter extends Component {
 		// this.setState({navbarOpacity: (value/10)})
 	}
 
-	componentDidMount() {
-		// console.log(this.props)
-	}
-
 	render() {
 		return (
 			<Router>
