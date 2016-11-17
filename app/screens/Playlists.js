@@ -9,19 +9,17 @@ import {
 	StyleSheet
 } from 'react-native'
 
-import PullBlurHeader from '../components/PullBlurHeader'
+import { connect } from 'react-redux'
+
 import HorizontalScrollBlocks from '../components/HorizontalScrollBlocks'
 import VerticalBlockList from '../components/VerticalBlockList'
 import SpotifyWebApi from '../services/Spotify'
 
-import CookieManager from 'react-native-cookies'
-
-export default class Playlists extends Component {
+class Playlists extends Component {
 
 	constructor() {
 		super()
 		this.state = {
-			headerHeight: 0,
 			playlistItems: new ListView.DataSource({
 				rowHasChanged: (r1, r2) => r1 !== r2
 			}),
@@ -32,42 +30,28 @@ export default class Playlists extends Component {
 	}
 
 	componentDidMount() {
-		CookieManager.getAll((err, res) => {
-			if ( res.access_token && res.refresh_token ) {
+		SpotifyWebApi.getFeaturedPlaylists(this.props.accessToken, 'ES', (res) => {
+			if ( res && !(res.error) ) {
 				this.setState({
-					accessToken: res.access_token.value,
-					refreshToken: res.refresh_token.value,
-				}, () => {
-					SpotifyWebApi.getFeaturedPlaylists(this.state.accessToken, 'ES', (res) => {
-						this.setState({
-							playlistItems: this.state.playlistItems.cloneWithRows(res.playlists.items),
-							sectionTitle: res.message
-						})
-
-						SpotifyWebApi.getCategories(this.state.accessToken, (res) => {
-							console.log(res.categories.items)
-							this.setState({
-								categoryItems: this.state.categoryItems.cloneWithRows(res.categories.items),
-							})
-						})
-					})
+					playlistItems: this.state.playlistItems.cloneWithRows(res.playlists.items),
+					sectionTitle: res.message
 				})
 			}
-		})
+		}).done()
+		SpotifyWebApi.getCategories(this.props.accessToken, (res) => {
+			if ( res && !(res.error) ) {
+				this.setState({
+					categoryItems: this.state.categoryItems.cloneWithRows(res.categories.items),
+				})
+			}
+		}).done()
 	}
 
 	render() {
 		return(
 			<ScrollView
-				contentContainerStyle={[styles.mainOuterScroll, {paddingTop: this.state.headerHeight}]}
+				contentContainerStyle={[styles.mainOuterScroll]}
 				automaticallyAdjustContentInsets={false}>
-
-				<PullBlurHeader
-					title={'Playlists'}
-					topScroll={0}
-					onLayout={(event) => {
-						this.setState({headerHeight: event.nativeEvent.layout.height})
-					}}/>
 
 				<HorizontalScrollBlocks
 					title={this.state.sectionTitle}
@@ -90,8 +74,16 @@ export default class Playlists extends Component {
 
 const styles = StyleSheet.create({
 	mainOuterScroll: {
-		paddingTop: 84,
-		paddingBottom: 100,
+		paddingTop: 64,
+		paddingBottom: 50,
 	}
 })
 
+function mapStateToProps(state) {
+	return {
+		accessToken: state.userTokens.accessToken,
+		refreshToken: state.userTokens.refreshToken,
+	}
+}
+
+export default connect(mapStateToProps)(Playlists)

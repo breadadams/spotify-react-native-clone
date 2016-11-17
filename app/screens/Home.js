@@ -17,6 +17,7 @@ import { Actions } from 'react-native-router-flux'
 import SpotifyWebApi from '../services/Spotify'
 
 import PullBlurHeader from '../components/PullBlurHeader'
+import MainButton from '../components/MainButton'
 
 class Home extends Component {
 
@@ -39,8 +40,8 @@ class Home extends Component {
 				this.setState({negativeTopScroll: 0})
 			}
 
-			if ( event.nativeEvent.contentOffset.y > (this.state.headerHeight - 200) ) {
-				Actions.refresh({ navigationBarStyle: {opacity: (event.nativeEvent.contentOffset.y - (this.state.headerHeight - 104)) / 30} })
+			if ( event.nativeEvent.contentOffset.y > 220 ) {
+				Actions.refresh({ navigationBarStyle: {opacity: ((event.nativeEvent.contentOffset.y - 220) / 40)} })
 			} else {
 				Actions.refresh({ navigationBarStyle: {opacity: 0} })
 			}
@@ -48,7 +49,9 @@ class Home extends Component {
 	}
 
 	componentWillMount() {
-		// console.log(this.props)
+		AsyncStorage.getAllKeys((result) => {
+			console.log(result)
+		})
 		AsyncStorage.getItem('refresh_token', (err, result) => {
 			if (result) {
 				console.log('retrieved refresh_token')
@@ -60,24 +63,22 @@ class Home extends Component {
 							refresh_token: result
 						}
 
-						this.props.setUserTokens(tokens, () => {
-							SpotifyWebApi.getProfileDetails(this.state.accessToken, (res) => {
-								if ( !res.error ) {
-									this.setState({
-										name: res.display_name,
-										img: res.images[0].url
-									}, () => {
-										Actions.refresh({title: this.state.name})
-									})
-								} else {
-									// if ( res.error.status === 401 ) {
-									// 	SpotifyWebApi.refreshAccessToken(res.refresh_token)
-									// }
-								}
-							})
+						this.props.setUserTokens(tokens)
+						console.log('tokens set, getting profile')
+						SpotifyWebApi.getProfileDetails(accessToken, (res) => {
+							if ( !res.error ) {
+								this.setState({
+									name: res.display_name,
+									img: res.images[0].url
+								}, () => {
+									Actions.refresh({title: this.state.name})
+								})
+							}
 						})
 					})
 				})
+			} else {
+				Actions.splashScreen()
 			}
 		})
 	}
@@ -85,8 +86,9 @@ class Home extends Component {
 	render() {
 		return(
 			<ScrollView
+				style={{backgroundColor: '#222222'}}
 				automaticallyAdjustContentInsets={false}
-				scrollEventThrottle={1}
+				scrollEventThrottle={16}
 				onScroll={(event) => {this.handleScroll(event)}}>
 
 				{(this.state.img
@@ -96,21 +98,38 @@ class Home extends Component {
 					img={this.state.img}
 					topScroll={this.state.negativeTopScroll}
 					onLayout={(event) => {
-						this.setState({headerHeight: event.nativeEvent.layout.height})
+						// this.setState({headerHeight: event.nativeEvent.layout.height})
 					}}/>
 
 				: null
 
 				)}
 
-				<Text
-					style={{marginTop: 247}}
-					onPress={() => Actions.splashScreen()}>{`Spotify Login`}</Text>
+				<MainButton
+					label='SHUFFLE PLAY'
+					onPress={() => {alert('Button pressed')}}/>
 
-				<Text>ACCESS TOKEN:</Text>
-				<Text>{this.props.accessToken}</Text>
-				<Text style={{marginTop: 20,}}>REFRESH TOKEN:</Text>
-				<Text style={{marginBottom: 400}}>{this.props.refreshToken}</Text>
+				<View
+					style={{backgroundColor: 'red'}}>
+
+					<Text
+						style={{color: 'white'}}>
+
+						<Text
+							onPress={() => Actions.splashScreen()}>
+							{`Spotify Login \n\n`}
+						</Text>
+
+
+						<Text>{`Access Token: \n`}</Text>
+						<Text>{this.props.accessToken + '\n\n'}</Text>
+						<Text style={{marginTop: 20,}}>{`Refresh Token: \n`}</Text>
+						<Text style={{marginBottom: 400}}>{this.props.refreshToken + '\n'}</Text>
+					</Text>
+
+				</View>
+
+				<View style={{height: 500}} />
 
 			</ScrollView>
 		)
