@@ -9,16 +9,20 @@ import queryString from 'query-string'
 
 var Buffer = require('buffer/').Buffer
 
-const CLIENT_ID = 'b8c236abd67a4bf98cb2d3ca1859e093'; // Your client id
-const CLIENT_SECRET = 'a3a2d358c1864351a5baaec4f691a3ac'; // Your secret
-const REDIRECT_URI = 'spotifyrn:/'; // Your redirect uri
+const CLIENT_ID = 'b8c236abd67a4bf98cb2d3ca1859e093' // Spotify app client_id
+const CLIENT_SECRET = 'a3a2d358c1864351a5baaec4f691a3ac' // Spotify app client_secret
+const REDIRECT_URI = 'spotifyrn:/';// Redirect URI (for auth redirect)
 
-const stateKey = 'spotify_auth_state';
-const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read';
+const STATE_KEY = 'spotify_auth_state'
+const ACCESS_TOKEN_KEY = 'access_token'
+const REFRESH_TOKEN_KEY = 'refresh_token'
+const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read'
 
 const SPOTIFY_API_URL = 'https://api.spotify.com/v1'
 const spotifyAccountURL = 'https://accounts.spotify.com/authorize?'
 const spotifyTokenURL = 'https://accounts.spotify.com/api/token'
+
+const FETCH_LIMIT = 15 // Max items to return in get requests (amount of playlists, categories, artists, etc...)
 
 class SpotifyWebApi {
 
@@ -75,9 +79,9 @@ class SpotifyWebApi {
 	static authenticate(callback) {
 
 		const keysToRemove = [
-			stateKey,
-			'access_token',
-			'refresh_token'
+			STATE_KEY,
+			ACCESS_TOKEN_KEY,
+			REFRESH_TOKEN_KEY
 		]
 
 		AsyncStorage.multiRemove(keysToRemove, (err) => {
@@ -85,7 +89,7 @@ class SpotifyWebApi {
 			let state = SpotifyWebApi._generateRandomString(16);
 
 			// Set spotify_auth_state in AsyncStorage
-			AsyncStorage.setItem(stateKey, state, () => {
+			AsyncStorage.setItem(STATE_KEY, state, () => {
 				fetch(spotifyAccountURL+
 					queryString.stringify({
 						response_type: 'code',
@@ -126,9 +130,9 @@ class SpotifyWebApi {
 		if ( event ) {
 			const queryVars = queryString.parse(event.url)
 
-			AsyncStorage.getItem(stateKey, (err, result) => {
+			AsyncStorage.getItem(STATE_KEY, (err, result) => {
 				if ( result == queryVars.state ) {
-					AsyncStorage.removeItem(stateKey, (err, result) => {
+					AsyncStorage.removeItem(STATE_KEY, (err, result) => {
 						fetch(spotifyTokenURL, {
 							method: 'POST',
 							headers: {
@@ -146,7 +150,7 @@ class SpotifyWebApi {
 							console.log('saving tokens')
 					        if ( res.access_token && res.refresh_token ) {
 
-					        	let tokens = [['access_token', res.access_token], ['refresh_token', res.refresh_token]]
+					        	let tokens = [[ACCESS_TOKEN_KEY, res.access_token], [REFRESH_TOKEN_KEY, res.refresh_token]]
 
 					        	console.log(res)
 
@@ -189,7 +193,7 @@ class SpotifyWebApi {
 		.then(res => {
 			console.log('getting new access token')
 	        if ( res.access_token ) {
-	        	AsyncStorage.setItem('access_token', res.access_token, () => {
+	        	AsyncStorage.setItem(ACCESS_TOKEN_KEY, res.access_token, () => {
 		        	if ( callback ) {
 		        		return callback(res.access_token)
 		        	}
@@ -207,7 +211,7 @@ class SpotifyWebApi {
 	}
 
 	// Return users playlists, takes optional limit & offset parameters
-	static getPlaylists(accessToken, limit = 15, offset = 0) {
+	static getPlaylists(accessToken, limit = FETCH_LIMIT, offset = 0) {
 
 		let params = [
 			`limit=${limit}`,
@@ -220,7 +224,7 @@ class SpotifyWebApi {
 
 
 	// Get users top content, takes a required type path parameter, and optional limit, offset & time_range parameters
-	static getUserTop(accessToken, type = 'artists', limit = 15, offset = 0, timeRange) {
+	static getUserTop(accessToken, type = 'artists', limit = FETCH_LIMIT, offset = 0, timeRange) {
 		
 		let params = [
 			`limit=${limit}`,
@@ -248,7 +252,7 @@ class SpotifyWebApi {
 
 
 	// Get featured playlists, takes optional country, locale, timestamp, limit & offset parameters
-	static getFeaturedPlaylists(accessToken, country, locale, timestamp, limit = 15, offset = 0) {
+	static getFeaturedPlaylists(accessToken, country, locale, timestamp, limit = FETCH_LIMIT, offset = 0) {
 
 		let params = [
 			country ? `country=${country}` : null,
@@ -265,7 +269,7 @@ class SpotifyWebApi {
 
 
 	// Get new releases, takes optional country, limit & offset parameters
-	static getNewReleases(accessToken, country, limit = 15, offset = 0) {
+	static getNewReleases(accessToken, country, limit = FETCH_LIMIT, offset = 0) {
 
 		let params = [
 			country ? `country=${country}` : null,
@@ -279,7 +283,7 @@ class SpotifyWebApi {
 
 
 	// Get spotify categories, takes optional country, locale, limit & offset parameters
-	static getCategories(accessToken, country, locale, limit = 15, offset = 0) {
+	static getCategories(accessToken, country, locale, limit = FETCH_LIMIT, offset = 0) {
 
 		let params = [
 			country ? `country=${country}` : null,
