@@ -22,14 +22,20 @@ export default class PullBlurHeader extends Component {
 	}
 
 	setImageBlur() {
-		if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= 0 ) {
+		if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= this.state.initialImgBlur ) {
+			this.setState({
+				imgBlur: this.state.initialImgBlur,
+			})
+		} else if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= 0 ) {
 			this.setState({
 				imgBlur: Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2))
 			})
-		} else if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) < 0 ) {
-			this.setState({
-				imgBlur: 0,
-			})
+		} else {
+			if ( this.state.imgBlur !== 0 ) {
+				this.setState({
+					imgBlur: 0,
+				})
+			}
 		}
 	}
 
@@ -40,8 +46,7 @@ export default class PullBlurHeader extends Component {
 	render() {
 		return (
 			<View
-				style={styles.headerOuterWrap}
-				onLayout={this.props.onLayout}>
+				style={styles.headerOuterWrap}>
 
 				<View
 					style={[styles.headerInnerWrap, {
@@ -81,8 +86,7 @@ export default class PullBlurHeader extends Component {
 PullBlurHeader.propTypes = {
 	title: React.PropTypes.string,
 	img: React.PropTypes.string,
-	topScroll: React.PropTypes.number,
-	onLayout: React.PropTypes.func
+	topScroll: React.PropTypes.number
 }
 
 const styles = StyleSheet.create({
@@ -100,7 +104,7 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		alignItems: 'stretch',
 		justifyContent: 'center',
-		backgroundColor: 'red',
+		backgroundColor: '#222222',
 	},
 
 	headerImgWrap: {
