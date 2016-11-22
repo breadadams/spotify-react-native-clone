@@ -9,26 +9,66 @@ import queryString from 'query-string'
 
 var Buffer = require('buffer/').Buffer
 
-const client_id = 'b8c236abd67a4bf98cb2d3ca1859e093'; // Your client id
-const client_secret = 'a3a2d358c1864351a5baaec4f691a3ac'; // Your secret
-const redirect_uri = 'spotifyrn:/'; // Your redirect uri
-const cookie_domain = 'com.spotifyrn';
+const CLIENT_ID = 'b8c236abd67a4bf98cb2d3ca1859e093'; // Your client id
+const CLIENT_SECRET = 'a3a2d358c1864351a5baaec4f691a3ac'; // Your secret
+const REDIRECT_URI = 'spotifyrn:/'; // Your redirect uri
 
 const stateKey = 'spotify_auth_state';
-const scope = 'user-read-private';
+const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read';
 
+const SPOTIFY_API_URL = 'https://api.spotify.com/v1'
 const spotifyAccountURL = 'https://accounts.spotify.com/authorize?'
 const spotifyTokenURL = 'https://accounts.spotify.com/api/token'
 
 class SpotifyWebApi {
 
-	static generateRandomString(length) {
-		var text = '';
-		var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	static headers(accessToken) {
 
-		for (var i = 0; i < length; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
+		let headers
+
+		if ( accessToken ) {
+			headers = {
+				'Authorization': 'Bearer ' + accessToken,
+			}
+		} else {
+			headers = {
+				'Accept': 'application/x-www-form-urlencoded',
+				'Content-Type':'application/x-www-form-urlencoded',
+				'Authorization': 'Basic ' + (new Buffer(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')),
+			}
 		}
+
+		return headers
+	}
+
+	static get(url, route, accessToken) {
+		return this.xhr(url, route, null, 'GET', accessToken)
+	}
+
+	static xhr(url, route, params, verb, accessToken) {
+		const targetUrl = (url ? url : SPOTIFY_API_URL) + route
+		let options = Object.assign(
+			{ method: verb },
+			params ? { body: JSON.stringify(params) } : null
+		)
+		options.headers = SpotifyWebApi.headers(accessToken)
+		return fetch(targetUrl, options).then( resp => {
+			let json = resp.json()
+			if ( resp.ok ) {
+				return json
+			}
+			return json.then(err => {throw err})
+		})
+	}
+
+	static _generateRandomString(length) {
+		let text = '';
+		const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+		for (let i = 0; i < length; i++) {
+			text += possible.charAt(Math.floor(Math.random() * possible.length));
+		}
+
 		return text;
 	}
 
@@ -42,16 +82,16 @@ class SpotifyWebApi {
 
 		AsyncStorage.multiRemove(keysToRemove, (err) => {
 
-			var state = SpotifyWebApi.generateRandomString(16)
+			let state = SpotifyWebApi._generateRandomString(16);
 
 			// Set spotify_auth_state in AsyncStorage
 			AsyncStorage.setItem(stateKey, state, () => {
 				fetch(spotifyAccountURL+
 					queryString.stringify({
 						response_type: 'code',
-						client_id: client_id,
-						scope: scope,
-						redirect_uri: redirect_uri,
+						client_id: CLIENT_ID,
+						scope: SCOPE,
+						redirect_uri: REDIRECT_URI,
 						state: state
 					})
 				)
@@ -59,7 +99,7 @@ class SpotifyWebApi {
 					if ( response.ok ) {
 						Linking.canOpenURL(response.url).then(supported => {
 							if( supported ) {
-								SpotifyWebApi.listenForResponse(callback)
+								SpotifyWebApi._listenForResponse(callback)
 								return Linking.openURL(response.url)
 							}
 						}).catch(err => console.error(err))
@@ -69,7 +109,7 @@ class SpotifyWebApi {
 		})
 	}
 
-	static listenForResponse(callback) {
+	static _listenForResponse(callback) {
 		Linking.addEventListener('url', (event) => {
 			if ( event.url ) {
 				SpotifyWebApi.getAccessTokenFromScheme(event, (tokens) => {
@@ -93,11 +133,11 @@ class SpotifyWebApi {
 							method: 'POST',
 							headers: {
 								'Content-Type':'application/x-www-form-urlencoded',
-								'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+								'Authorization': 'Basic ' + (new Buffer(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'))
 							},
 							body: queryString.stringify({
 								code: queryVars['spotifyrn:/?code'],
-								redirect_uri: redirect_uri,
+								redirect_uri: REDIRECT_URI,
 						        grant_type: 'authorization_code'
 							})
 						})
@@ -105,17 +145,20 @@ class SpotifyWebApi {
 						.then(res => {
 							console.log('saving tokens')
 					        if ( res.access_token && res.refresh_token ) {
-					        	AsyncStorage.setItem('access_token', res.access_token, () => {
-					        		AsyncStorage.setItem('refresh_token', res.refresh_token, () => {
-					        			if ( callback ) {
-					        				var tokens = {
-												access_token: res.access_token,
-												refresh_token: res.refresh_token,
-											}
 
-								        	return callback(tokens)
-					        			}
-					        		})
+					        	let tokens = [['access_token', res.access_token], ['refresh_token', res.refresh_token]]
+
+					        	console.log(res)
+
+					        	AsyncStorage.multiSet(tokens, () => {
+				        			if ( callback ) {
+				        				var tokens = {
+											access_token: res.access_token,
+											refresh_token: res.refresh_token,
+										}
+
+							        	return callback(tokens)
+				        			}
 					        	})
 					        }
 					    }).done()
@@ -135,7 +178,7 @@ class SpotifyWebApi {
 			method: 'POST',
 			headers: {
 				'Content-Type':'application/x-www-form-urlencoded',
-				'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+				'Authorization': 'Basic ' + (new Buffer(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'))
 			},
 			body: queryString.stringify({
 		        grant_type: 'refresh_token',
@@ -157,74 +200,57 @@ class SpotifyWebApi {
 	    })
 	}
 
-	static getProfileDetails(accessToken, callback) {
-
-		return fetch('https://api.spotify.com/v1/me', {
-			method: 'GET',
-			headers: {
-				'Authorization': 'Bearer ' + accessToken
-			},
-		})
-		.then(res => res.json())
-		.then(res => {
-	        if ( res && callback ) {
-	        	return callback(res)
-			}    	
-	    })
+	static getProfileDetails(accessToken) {
+		return this.get(null, '/me/', accessToken)
 	}
 
+	// Return users playlists
 	static getPlaylists(accessToken) {
-		return fetch('https://api.spotify.com/v1/me/playlists', {
-			method: 'GET',
-			headers: {
-				'Authorization': 'Bearer ' + accessToken
-			},
-		})
-		.then(res => res.json())
-		.then(res => {
-	        if ( res ) {
-	        	console.log(res)
-	        }
-	    })
+	    return this.get(null, '/me/playlists', accessToken)
 	}
 
-	static getFeaturedPlaylists(accessToken, countryCode, callback) {
-		
-		let countryCodeQuery
-
-		if ( countryCode) {
-			countryCodeQuery = '?country='+countryCode
-		} else {
-			countryCodeQuery = '';
-		}
-
-		return fetch('https://api.spotify.com/v1/browse/featured-playlists' + countryCodeQuery, {
-			method: 'GET',
-			headers: {
-				'Authorization': 'Bearer ' + accessToken
-			}
-		})
-		.then(res => res.json())
-		.then(res => {
-	        if ( res && callback ) {
-	        	callback(res)
-	        }
-	    })
+	// Get users top content (takes artists/tracks as type)
+	static getUserTop(accessToken, type = '') {
+		return this.get(null, `/me/top${type ? `/${type}` : null}`, accessToken)
 	}
 
-	static getCategories(accessToken, callback) {
-		return fetch('https://api.spotify.com/v1/browse/categories', {
-			method: 'GET',
-			headers: {
-				'Authorization': 'Bearer ' + accessToken
-			}
-		})
-		.then(res => res.json())
-		.then(res => {
-	        if ( res && callback ) {
-	        	callback(res)
-	        }
-	    })
+	// Get recommendations based on seeds, takes an object with artists, tracks & genres
+	static getRecommendations(accessToken, {artists, tracks, genres} = {}) {
+		const params = [
+			`seed_artists=${artists ? artists : ''}`,
+			`seed_genres=${genres ? genres : ''}`,
+			`seed_tracks=${tracks ? tracks : ''}`
+		].join('&');
+
+		return this.get(null, `/recommendations?${params}`, accessToken)
+	}
+
+	// Get featured playlists
+	static getFeaturedPlaylists(accessToken, countryCode) {
+
+		let countryCodeQuery = countryCode ? `?country=${countryCode}` : ''
+
+		return this.get(null, `/browse/featured-playlists${countryCodeQuery}`, accessToken)
+
+	}
+
+	// Get new releases, takes optional countryCode 
+	static getNewReleases(accessToken, countryCode, limit = 15, offset = 0) {
+
+		this._doesHaveAccessToken(accessToken, 'getNewReleases')
+
+		const params = [
+			countryCode ? `country=${countryCode}` : null,
+			`limit=${limit}`,
+			`offset=${offset}`
+		].join('&');
+
+		return this.get(null, `/browse/new-releases?${params}`, accessToken)
+	}
+
+	// Get spotify categories
+	static getCategories(accessToken) {
+		return this.get(null, '/browse/categories', accessToken)
 	}
 
 }
