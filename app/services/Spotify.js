@@ -201,22 +201,42 @@ class SpotifyWebApi {
 	}
 
 	static getProfileDetails(accessToken) {
+
 		return this.get(null, '/me/', accessToken)
+
 	}
 
-	// Return users playlists
-	static getPlaylists(accessToken) {
-	    return this.get(null, '/me/playlists', accessToken)
+	// Return users playlists, takes optional limit & offset parameters
+	static getPlaylists(accessToken, limit = 15, offset = 0) {
+
+		let params = [
+			`limit=${limit}`,
+			`offset=${offset}`,
+		].join('&');
+
+	    return this.get(null, `/me/playlists?${params}`, accessToken)
 	}
 
-	// Get users top content (takes artists/tracks as type)
-	static getUserTop(accessToken, type = '') {
-		return this.get(null, `/me/top${type ? `/${type}` : null}`, accessToken)
+
+
+	// Get users top content, takes a required type path parameter, and optional limit, offset & time_range parameters
+	static getUserTop(accessToken, type = 'artists', limit = 15, offset = 0, timeRange) {
+		
+		let params = [
+			`limit=${limit}`,
+			`offset=${offset}`,
+			timeRange ? `time_range=${timeRange}` : null,
+		].join('&');
+
+		return this.get(null, `/me/top/${type}?${params}`, accessToken)
 	}
+
+
 
 	// Get recommendations based on seeds, takes an object with artists, tracks & genres
 	static getRecommendations(accessToken, {artists, tracks, genres} = {}) {
-		const params = [
+		
+		let params = [
 			`seed_artists=${artists ? artists : ''}`,
 			`seed_genres=${genres ? genres : ''}`,
 			`seed_tracks=${tracks ? tracks : ''}`
@@ -225,22 +245,30 @@ class SpotifyWebApi {
 		return this.get(null, `/recommendations?${params}`, accessToken)
 	}
 
-	// Get featured playlists
-	static getFeaturedPlaylists(accessToken, countryCode) {
 
-		let countryCodeQuery = countryCode ? `?country=${countryCode}` : ''
 
-		return this.get(null, `/browse/featured-playlists${countryCodeQuery}`, accessToken)
+	// Get featured playlists, takes optional country, locale, timestamp, limit & offset parameters
+	static getFeaturedPlaylists(accessToken, country, locale, timestamp, limit = 15, offset = 0) {
+
+		let params = [
+			country ? `country=${country}` : null,
+			locale ? `locale=${locale}` : null,
+			timestamp ? `timestamp=${timestamp}` : null,
+			`limit=${limit}`,
+			`offset=${offset}`
+		].join('&');
+
+		return this.get(null, `/browse/featured-playlists?${params}`, accessToken)
 
 	}
 
-	// Get new releases, takes optional countryCode 
-	static getNewReleases(accessToken, countryCode, limit = 15, offset = 0) {
 
-		this._doesHaveAccessToken(accessToken, 'getNewReleases')
 
-		const params = [
-			countryCode ? `country=${countryCode}` : null,
+	// Get new releases, takes optional country, limit & offset parameters
+	static getNewReleases(accessToken, country, limit = 15, offset = 0) {
+
+		let params = [
+			country ? `country=${country}` : null,
 			`limit=${limit}`,
 			`offset=${offset}`
 		].join('&');
@@ -248,9 +276,19 @@ class SpotifyWebApi {
 		return this.get(null, `/browse/new-releases?${params}`, accessToken)
 	}
 
-	// Get spotify categories
-	static getCategories(accessToken) {
-		return this.get(null, '/browse/categories', accessToken)
+
+
+	// Get spotify categories, takes optional country, locale, limit & offset parameters
+	static getCategories(accessToken, country, locale, limit = 15, offset = 0) {
+
+		let params = [
+			country ? `country=${country}` : null,
+			locale ? `locale=${locale}` : null,
+			`limit=${limit}`,
+			`offset=${offset}`
+		].join('&');
+
+		return this.get(null, `/browse/categories?${params}`, accessToken)
 	}
 
 }
