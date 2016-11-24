@@ -28,9 +28,9 @@ export default class Splash extends Component {
 			<View
 				style={styles.outerWrap}>
 				<Video
-					source={{uri: 'https://static.videezy.com/system/resources/previews/000/004/969/original/blowing_wind.mp4'}}
+					source={require('../videos/blowing_wind.mp4')}
 					repeat
-					style={{position: 'absolute', left: 0, top: 0, right: 0, bottom: 0}}
+					style={StyleSheet.absoluteFill}
 					muted={true}
 					volume={0}
 					resizeMode='cover'/>
