@@ -6,7 +6,7 @@ import {
 	StyleSheet
 } from 'react-native'
 
-const BUTTON_HEIGHT = 42
+const BUTTON_HEIGHT = 44
 
 export default class MainButton extends Component {
 
