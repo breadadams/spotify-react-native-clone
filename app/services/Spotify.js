@@ -2,7 +2,8 @@
 import {
 	View,
 	Linking,
-	AsyncStorage
+	AsyncStorage,
+	NativeModules
 } from 'react-native'
 
 import queryString from 'query-string'
@@ -16,6 +17,7 @@ const REDIRECT_URI = 'spotifyrn:/';// Redirect URI (for auth redirect)
 const STATE_KEY = 'spotify_auth_state'
 const ACCESS_TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
+const ACCESS_EXPIRY_KEY = 'access_token_expiry'
 const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read'
 
 const SPOTIFY_API_URL = 'https://api.spotify.com/v1'
@@ -24,6 +26,9 @@ const spotifyTokenURL = 'https://accounts.spotify.com/api/token'
 
 const FETCH_LIMIT = 15 // Max items to return in get requests (amount of playlists, categories, artists, etc...)
 const FETCH_OFFSET = 0 // Offset value for get requests (excludes X amount of items from start and returns the FETCH_LIMIT from that point onwards)
+
+const LOCALE = NativeModules.SettingsManager.settings.AppleLocale
+const COUNTRY = LOCALE.slice(-2)
 
 class SpotifyWebApi {
 
@@ -150,10 +155,13 @@ class SpotifyWebApi {
 						})
 						.then(res => res.json())
 						.then(res => {
-							console.log('saving tokens')
 					        if ( res.access_token && res.refresh_token ) {
 
-					        	let tokens = [[ACCESS_TOKEN_KEY, res.access_token], [REFRESH_TOKEN_KEY, res.refresh_token]]
+					        	let accessTokenExpiry = (new Date().getTime() / 1000) + res.expires_in;
+					        	let tokens = [
+					        		[ACCESS_TOKEN_KEY, res.access_token],
+					        		[REFRESH_TOKEN_KEY, res.refresh_token],
+					        		[ACCESS_EXPIRY_KEY, accessTokenExpiry.toString()]]
 
 					        	AsyncStorage.multiSet(tokens, () => {
 				        			if ( callback ) {
@@ -194,8 +202,16 @@ class SpotifyWebApi {
 		.then(res => res.json())
 		.then(res => {
 			console.log('getting new access token')
+			console.log(res)
 	        if ( res.access_token ) {
-	        	AsyncStorage.setItem(ACCESS_TOKEN_KEY, res.access_token, () => {
+	        	let accessTokenExpiry = (new Date().getTime() / 1000) + res.expires_in;
+
+	        	let storageItems = [
+	        		[ACCESS_TOKEN_KEY, res.access_token],
+	        		[ACCESS_EXPIRY_KEY, accessTokenExpiry.toString()]
+        		]
+
+	        	AsyncStorage.multiSet(storageItems, () => {
 		        	if ( callback ) {
 		        		return callback(res.access_token)
 		        	}
@@ -255,11 +271,11 @@ class SpotifyWebApi {
 
 
 	// Get featured playlists, takes optional country, locale, timestamp, limit & offset parameters
-	static getFeaturedPlaylists(accessToken, country, locale, timestamp, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
+	static getFeaturedPlaylists(accessToken, country = COUNTRY, locale = LOCALE, timestamp, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
 
 		let params = [
-			country ? `country=${country}` : null,
-			locale ? `locale=${locale}` : null,
+			`country=${country}`,
+			`locale=${locale}`,
 			timestamp ? `timestamp=${timestamp}` : null,
 			`limit=${limit}`,
 			`offset=${offset}`
@@ -272,10 +288,10 @@ class SpotifyWebApi {
 
 
 	// Get new releases, takes optional country, limit & offset parameters
-	static getNewReleases(accessToken, country, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
+	static getNewReleases(accessToken, country = COUNTRY, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
 
 		let params = [
-			country ? `country=${country}` : null,
+			`country=${country}`,
 			`limit=${limit}`,
 			`offset=${offset}`
 		].join('&');
@@ -286,11 +302,11 @@ class SpotifyWebApi {
 
 
 	// Get spotify categories, takes optional country, locale, limit & offset parameters
-	static getCategories(accessToken, country, locale, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
+	static getCategories(accessToken, country = COUNTRY, locale = LOCALE, limit = FETCH_LIMIT, offset = FETCH_OFFSET) {
 
 		let params = [
-			country ? `country=${country}` : null,
-			locale ? `locale=${locale}` : null,
+			`country=${country}`,
+			`locale=${locale}`,
 			`limit=${limit}`,
 			`offset=${offset}`
 		].join('&');
