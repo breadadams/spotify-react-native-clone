@@ -9,7 +9,8 @@ import {
 	Animated,
 	Dimensions,
 	Image,
-	StatusBar
+	StatusBar,
+	TouchableOpacity
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -53,8 +54,8 @@ class CurrentlyPlaying extends Component {
 
 		this._panResponder = PanResponder.create({
 			// Ask to be the responder:
-			onStartShouldSetPanResponder: (evt, gestureState) => true,
-			onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+			// onStartShouldSetPanResponder: (evt, gestureState) => true,
+			// onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
 			onMoveShouldSetPanResponder: (evt, gestureState) => true,
 			onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
@@ -146,7 +147,7 @@ class CurrentlyPlaying extends Component {
 						}
 					)
 				]).start(() => {
-					
+
 					Animated.timing(
 						this.state.navbarOpacity,
 						{
@@ -169,6 +170,40 @@ class CurrentlyPlaying extends Component {
 			}
 		})
 
+	}
+
+	openPlayer() {
+		Animated.parallel([
+			Animated.timing(
+				this.state.draggedUp,
+				{
+					duration: 350,
+					toValue:  TOP_COORD * -1
+				}
+			),
+			Animated.timing(
+				this.state.miniPlayerOpacity,
+				{
+					duration: 300,
+					toValue: 0
+				}
+			)
+		]).start(() => {
+
+			Animated.timing(
+				this.state.navbarOpacity,
+				{
+					duration: 100,
+					toValue: 0
+				}
+			).start()
+
+			StatusBar.setHidden(true, 'slide')
+
+			this.setState({
+				draggedLocation: TOP_COORD * -1
+			})
+		})
 	}
 
 	render() {
@@ -229,6 +264,10 @@ class CurrentlyPlaying extends Component {
 								name='ios-pause'/>
 						</View>
 					</View>
+
+					<TouchableOpacity
+						style={styles.touchableBar}
+						onPress={() => this.openPlayer()}/>
 
 				</Animated.View>
 
@@ -340,6 +379,12 @@ const styles = StyleSheet.create({
 		top: 1,
 		left: 0,
 	},
+
+	touchableBar: {
+		...StyleSheet.absoluteFillObject,
+		backgroundColor: 'transparent',
+		zIndex: 6,
+	}
 
 })
 
