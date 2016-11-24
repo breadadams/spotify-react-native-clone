@@ -2,143 +2,115 @@
 import React, {Component} from 'react'
 import {
 	View,
-	ScrollView,
 	Text,
-	Linking,
-	Image,
 	StyleSheet,
-	AsyncStorage
+	TouchableOpacity,
+	ListView
 } from 'react-native'
 
 import { connect } from 'react-redux'
-import CookieManager from 'react-native-cookies'
 import { Actions } from 'react-native-router-flux'
 
 import SpotifyWebApi from '../services/Spotify'
 
-import PullBlurHeader from '../components/PullBlurHeader'
-import MainButton from '../components/MainButton'
+import TokenChecker from '../components/TokenChecker'
+import ViewContainer from '../components/ViewContainer'
+import ScrollableView from '../components/ScrollableView'
+import HorizontalScrollBlocks from '../components/HorizontalScrollBlocks'
+import CurrentlyPlaying from '../components/CurrentlyPlaying'
 
 class Home extends Component {
 
 	constructor() {
 		super()
 		this.state = {
-			name: '',
-			img: '',
-			headerHeight: 0,
-			negativeTopScroll: 0,
-		}
-	}
-
-	handleScroll = (event) => {
-
-		if ( event.nativeEvent.contentOffset.y < 0 ) {
-			this.setState({negativeTopScroll: event.nativeEvent.contentOffset.y})
-		} else {
-			if ( this.state.negativeTopScroll !== 0 ) {
-				this.setState({negativeTopScroll: 0})
-			}
-
-			if ( event.nativeEvent.contentOffset.y > 220 ) {
-				Actions.refresh({ navigationBarStyle: {opacity: ((event.nativeEvent.contentOffset.y - 220) / 40)} })
-			} else {
-				Actions.refresh({ navigationBarStyle: {opacity: 0} })
-			}
+			featuredPlaylists: new ListView.DataSource({
+				rowHasChanged: (r1, r2) => r1 !== r2
+			}),
+			featuredPlaylistsTitle: '',
+			recommendedArtists: new ListView.DataSource({
+				rowHasChanged: (r1, r2) => r1 !== r2
+			}),
+			newReleases: new ListView.DataSource({
+				rowHasChanged: (r1, r2) => r1 !== r2
+			}),
 		}
 	}
 
 	componentWillMount() {
-		AsyncStorage.getAllKeys((result) => {
-			console.log(result)
-		})
-		AsyncStorage.getItem('refresh_token', (err, result) => {
-			if (result) {
-				console.log('retrieved refresh_token')
-				SpotifyWebApi.refreshAccessToken(result, (accessToken) => {
-					AsyncStorage.setItem('access_token', accessToken, () => {
+		TokenChecker.checkTokenExists(this.props.setUserTokens, () => {
 
-						const tokens = {
-							access_token: accessToken,
-							refresh_token: result
-						}
-
-						this.props.setUserTokens(tokens)
-						console.log('tokens set, getting profile')
-						SpotifyWebApi.getProfileDetails(accessToken, (res) => {
-							if ( !res.error ) {
-								this.setState({
-									name: res.display_name,
-									img: res.images[0].url
-								}, () => {
-									Actions.refresh({title: this.state.name})
-								})
-							}
-						})
+			SpotifyWebApi.getFeaturedPlaylists(this.props.accessToken).then( res => {
+				if ( res && !(res.error) ) {
+					this.setState({
+						featuredPlaylists: this.state.featuredPlaylists.cloneWithRows(res.playlists.items),
+						featuredPlaylistsTitle: res.message
 					})
-				})
-			} else {
-				Actions.splashScreen()
-			}
+				}
+			}).done()
+
+			SpotifyWebApi.getUserTop(this.props.accessToken, 'artists', 10).then(res => {
+				if ( res && !(res.error) ) {
+
+					this.setState({
+						recommendedArtists: this.state.recommendedArtists.cloneWithRows(res.items)
+					})
+
+				}
+
+			}).done()
+
+			SpotifyWebApi.getNewReleases(this.props.accessToken).then(res => {
+				if ( res && !(res.error) ) {
+
+					console.log(res)
+
+					this.setState({
+						newReleases: this.state.recommendedArtists.cloneWithRows(res.albums.items)
+					})
+
+				}
+			}).done()
 		})
 	}
 
 	render() {
 		return(
-			<ScrollView
-				style={{backgroundColor: '#222222'}}
-				automaticallyAdjustContentInsets={false}
-				scrollEventThrottle={16}
-				onScroll={(event) => {this.handleScroll(event)}}>
+			<ViewContainer>
 
-				{(this.state.img
+				<ScrollableView>
 
-				? <PullBlurHeader
-					title={this.state.name}
-					img={this.state.img}
-					topScroll={this.state.negativeTopScroll}
-					onLayout={(event) => {
-						// this.setState({headerHeight: event.nativeEvent.layout.height})
-					}}/>
+					<HorizontalScrollBlocks
+						title={this.state.featuredPlaylistsTitle}
+						dataSource={this.state.featuredPlaylists}
+						displayContentBelow
+						style={styles.playlistBlock}/>
 
-				: null
+					<HorizontalScrollBlocks
+						title={`Recommended Artists`}
+						dataSource={this.state.recommendedArtists}
+						displayContentBelow
+						style={styles.playlistBlock}/>
 
-				)}
+					<HorizontalScrollBlocks
+						title={`New Releases`}
+						dataSource={this.state.newReleases}
+						displayContentBelow
+						style={styles.playlistBlock}/>
 
-				<MainButton
-					label='SHUFFLE PLAY'
-					onPress={() => {alert('Button pressed')}}/>
+				</ScrollableView>
 
-				<View
-					style={{backgroundColor: 'red'}}>
+				<CurrentlyPlaying/>
 
-					<Text
-						style={{color: 'white'}}>
-
-						<Text
-							onPress={() => Actions.splashScreen()}>
-							{`Spotify Login \n\n`}
-						</Text>
-
-
-						<Text>{`Access Token: \n`}</Text>
-						<Text>{this.props.accessToken + '\n\n'}</Text>
-						<Text style={{marginTop: 20,}}>{`Refresh Token: \n`}</Text>
-						<Text style={{marginBottom: 400}}>{this.props.refreshToken + '\n'}</Text>
-					</Text>
-
-				</View>
-
-				<View style={{height: 500}} />
-
-			</ScrollView>
+			</ViewContainer>
 		)
 	}
 }
 
 const styles = StyleSheet.create({
-
-
+	playlistBlock: {
+		marginBottom: 65
+	}
 })
 
 function mapStateToProps(state) {
