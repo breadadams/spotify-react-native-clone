@@ -13,6 +13,7 @@ import { Router, Scene } from 'react-native-router-flux'
 import CookieManager from 'react-native-cookies'
 
 import Home from '../screens/Home'
+import TestPage from '../screens/TestPage'
 import Playlists from '../screens/Playlists'
 import Splash from '../screens/Splash'
 
@@ -28,20 +29,10 @@ class NavRouter extends Component {
 
 	constructor() {
 		super()
-		this.state = {
-			navbarOpacity: 0,
-			accessToken: '',
-			refreshToken: '',
-		}
 	}
 
 	componentDidMount() {
 		StatusBar.setBarStyle('light-content', true);
-	}
-
-	transitionNavbar(value) {
-		// console.log('scrolled: '+value)
-		// this.setState({navbarOpacity: (value/10)})
 	}
 
 	render() {
@@ -59,7 +50,7 @@ class NavRouter extends Component {
 							key='homeTab'
 							icon={tabicon}
 							title='Home'
-							navigationBarStyle={[styles.mainNavbar, styles.mainNavbarStartOpaque]}
+							navigationBarStyle={styles.mainNavbar}
 							titleStyle={styles.mainNavbarTitle}
 							initial>
 
@@ -67,8 +58,7 @@ class NavRouter extends Component {
 								{...this.props}
 								key='homeScreen'
 								component={Home}
-								title='Home'
-								transitionNavbar={(value) => {this.transitionNavbar(value)}}/>
+								title='HOME'/>
 
 						</Scene>
 
@@ -83,6 +73,22 @@ class NavRouter extends Component {
 								key='browseScreen'
 								component={Playlists}
 								title='Playlists'/>
+
+						</Scene>
+
+						<Scene
+							key='testTab'
+							icon={tabicon}
+							title='Tokens'
+							navigationBarStyle={[styles.mainNavbar, styles.mainNavbarStartOpaque]}
+							titleStyle={styles.mainNavbarTitle}>
+
+							<Scene
+								{...this.props}
+								key='testScreen'
+								component={TestPage}
+								title='TOKENS'
+								transitionNavbar={(value) => {this.transitionNavbar(value)}}/>
 
 						</Scene>
 
@@ -106,8 +112,7 @@ const styles = StyleSheet.create({
 	tabBar: {
 		borderTopWidth: .5,
 		borderColor: '#101011',
-		backgroundColor: '#222327',
-		opacity: 1
+		backgroundColor: '#38393d',
 	},
 
 	mainNavbar: {
@@ -122,6 +127,9 @@ const styles = StyleSheet.create({
 
 	mainNavbarTitle: {
 		color: '#ffffff',
+		fontSize: 15,
+		fontWeight: '600',
+		letterSpacing: .75,
 	},
 });
 
