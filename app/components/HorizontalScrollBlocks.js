@@ -116,6 +116,7 @@ HorizontalScrollBlocks.propTypes = {
 	style: React.PropTypes.oneOfType([
 	    React.PropTypes.object,
 	    React.PropTypes.number,
+	    React.PropTypes.array,
     ])
 }
 
