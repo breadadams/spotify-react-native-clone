@@ -5,7 +5,8 @@ import {
 	Image,
 	Text,
 	TouchableOpacity,
-	StyleSheet
+	StyleSheet,
+	Animated
 } from 'react-native'
 
 const HEADER_HEIGHT = 300
@@ -17,24 +18,18 @@ export default class PullBlurHeader extends Component {
 		super()
 		this.state = {
 			initialImgBlur: IMAGE_BLUR,
-			imgBlur: IMAGE_BLUR,
+			imgBlur: new Animated.Value(IMAGE_BLUR),
 		}
 	}
 
 	setImageBlur() {
 		if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= this.state.initialImgBlur ) {
-			this.setState({
-				imgBlur: this.state.initialImgBlur,
-			})
+			this.state.imgBlur.setValue(this.state.initialImgBlur)
 		} else if ( Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)) >= 0 ) {
-			this.setState({
-				imgBlur: Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2))
-			})
+			this.state.imgBlur.setValue(Math.floor(this.state.initialImgBlur - (this.props.topScroll / -2)))
 		} else {
 			if ( this.state.imgBlur !== 0 ) {
-				this.setState({
-					imgBlur: 0,
-				})
+				this.state.imgBlur.setValue(0)
 			}
 		}
 	}
@@ -56,7 +51,7 @@ export default class PullBlurHeader extends Component {
 						height: this.props.topScroll < 0 ? HEADER_HEIGHT + (this.props.topScroll * -1.2) : HEADER_HEIGHT,
 					}]}>
 
-					<Image
+					<Animated.Image
 						style={styles.headerImgWrap}
 						resizeMode='cover'
 						blurRadius={this.state.imgBlur}
