@@ -5,7 +5,6 @@
 	};
 	objectVersion = 46;
 	objects = {
-
 /* Begin PBXBuildFile section */
 		00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302AC1ABCB8CE00DB3ED1 /* libRCTActionSheet.a */; };
 		00C302E71ABCBA2D00DB3ED1 /* libRCTGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C302BA1ABCB90400DB3ED1 /* libRCTGeolocation.a */; };
@@ -25,6 +24,7 @@
 		180ABD6E183B48ED84D1814D /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2146001FC7C4A018ABB6FC5 /* libRNFetchBlob.a */; };
 		307015886C194903AD37F1AF /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E4B69C7EACD1468DB38A236A /* EvilIcons.ttf */; };
 		39B23B93E2CD413AAA728AB5 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F589DF49B6B44BB58E635040 /* SimpleLineIcons.ttf */; };
+		4D81C2512DE941468AD17E8C /* libRNSound.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3BC023EB8D7546AF85EC5833 /* libRNSound.a */; };
 		58D2F846C8DA4B7A98038295 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8DC23705639A4587A77FD60B /* FontAwesome.ttf */; };
 		5E647F0B179546B6A91A7E9A /* libTouchID.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 47D2FDB9D16B4BE78DC5E051 /* libTouchID.a */; };
 		7146D496860647D081C445D7 /* libRNCookieManagerIOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B591453FA9045EF9CF1FA3F /* libRNCookieManagerIOS.a */; };
@@ -216,6 +216,13 @@
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = TouchID;
 		};
+		8DEB47A61DECEBD700B4C554 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1772345F76A54135AE138FDC /* RNSound.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 19825A1E1BD4A89800EE0337;
+			remoteInfo = RNSound;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -238,7 +245,9 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = spotify_rn/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = spotify_rn/main.m; sourceTree = "<group>"; };
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native/React/React.xcodeproj"; sourceTree = "<group>"; };
+		1772345F76A54135AE138FDC /* RNSound.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNSound.xcodeproj; path = "../node_modules/react-native-sound/RNSound.xcodeproj"; sourceTree = "<group>"; };
 		21FFBDD305434C598540D02F /* RCTVideo.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RCTVideo.xcodeproj; path = "../node_modules/react-native-video/ios/RCTVideo.xcodeproj"; sourceTree = "<group>"; };
+		3BC023EB8D7546AF85EC5833 /* libRNSound.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNSound.a; sourceTree = "<group>"; };
 		47D2FDB9D16B4BE78DC5E051 /* libTouchID.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libTouchID.a; sourceTree = "<group>"; };
 		58839C3B62D84CCE89E30199 /* libRCTActionSheet.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRCTActionSheet.a; sourceTree = "<group>"; };
 		65FB0BAECC524457BB09FF71 /* RNVectorIcons.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNVectorIcons.xcodeproj; path = "../node_modules/react-native-vector-icons/RNVectorIcons.xcodeproj"; sourceTree = "<group>"; };
@@ -292,6 +301,7 @@
 				5E647F0B179546B6A91A7E9A /* libTouchID.a in Frameworks */,
 				C1E149850DA34AB4A76B2E49 /* libRCTActionSheet.a in Frameworks */,
 				8B14507D3D164FB9A6883B5B /* libRNVectorIcons.a in Frameworks */,
+				4D81C2512DE941468AD17E8C /* libRNSound.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,6 +436,7 @@
 				8219F66721654EE787EB8D58 /* TouchID.xcodeproj */,
 				F898B908529B4947B9C39E79 /* PeekPopAttempt.xcodeproj */,
 				65FB0BAECC524457BB09FF71 /* RNVectorIcons.xcodeproj */,
+				1772345F76A54135AE138FDC /* RNSound.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -506,6 +517,14 @@
 			isa = PBXGroup;
 			children = (
 				8DDA03021DE35D2800B23157 /* libTouchID.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8DEB478F1DECEBD700B4C554 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DEB47A71DECEBD700B4C554 /* libRNSound.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -651,6 +670,10 @@
 				{
 					ProductGroup = 8D2ED0DA1DD54B9000F96B37 /* Products */;
 					ProjectRef = EEC81F3FE5FB41F880788D92 /* RNFetchBlob.xcodeproj */;
+				},
+				{
+					ProductGroup = 8DEB478F1DECEBD700B4C554 /* Products */;
+					ProjectRef = 1772345F76A54135AE138FDC /* RNSound.xcodeproj */;
 				},
 				{
 					ProductGroup = 8D8BF9B11DE5FB9A00EBA3BD /* Products */;
@@ -838,6 +861,13 @@
 			remoteRef = 8DDA03011DE35D2800B23157 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		8DEB47A71DECEBD700B4C554 /* libRNSound.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNSound.a;
+			remoteRef = 8DEB47A61DECEBD700B4C554 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -946,6 +976,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -964,6 +995,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
@@ -994,6 +1026,7 @@
 					"$(SRCROOT)/../node_modules/react-native-touch-id",
 					"$(SRCROOT)/../node_modules/react-native-peek-pop/ios/PeekPopAttempt",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-sound/RNSound",
 				);
 				INFOPLIST_FILE = spotify_rn/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1024,6 +1057,7 @@
 					"$(SRCROOT)/../node_modules/react-native-touch-id",
 					"$(SRCROOT)/../node_modules/react-native-peek-pop/ios/PeekPopAttempt",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-sound/RNSound",
 				);
 				INFOPLIST_FILE = spotify_rn/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1087,6 +1121,7 @@
 					"$(SRCROOT)/../node_modules/react-native-touch-id",
 					"$(SRCROOT)/../node_modules/react-native-peek-pop/ios/PeekPopAttempt",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-sound/RNSound",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1137,6 +1172,7 @@
 					"$(SRCROOT)/../node_modules/react-native-touch-id",
 					"$(SRCROOT)/../node_modules/react-native-peek-pop/ios/PeekPopAttempt",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-sound/RNSound",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
