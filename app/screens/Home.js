@@ -18,12 +18,14 @@ import ViewContainer from '../components/ViewContainer'
 import ScrollableView from '../components/ScrollableView'
 import HorizontalScrollBlocks from '../components/HorizontalScrollBlocks'
 import CurrentlyPlaying from '../components/CurrentlyPlaying'
+import LoadingView from '../components/LoadingView'
 
 class Home extends Component {
 
 	constructor() {
 		super()
 		this.state = {
+			loading: true,
 			featuredPlaylists: new ListView.DataSource({
 				rowHasChanged: (r1, r2) => r1 !== r2
 			}),
@@ -63,14 +65,14 @@ class Home extends Component {
 			SpotifyWebApi.getNewReleases(this.props.accessToken).then(res => {
 				if ( res && !(res.error) ) {
 
-					console.log(res)
-
 					this.setState({
-						newReleases: this.state.recommendedArtists.cloneWithRows(res.albums.items)
+						newReleases: this.state.recommendedArtists.cloneWithRows(res.albums.items),
+						loading: false,
 					})
 
 				}
 			}).done()
+
 		})
 	}
 
@@ -84,7 +86,7 @@ class Home extends Component {
 						title={this.state.featuredPlaylistsTitle}
 						dataSource={this.state.featuredPlaylists}
 						displayContentBelow
-						style={styles.playlistBlock}/>
+						style={[styles.playlistBlock, styles.firstPlaylistBlock]}/>
 
 					<HorizontalScrollBlocks
 						title={`Recommended Artists`}
@@ -100,7 +102,11 @@ class Home extends Component {
 
 				</ScrollableView>
 
-				<CurrentlyPlaying/>
+				<LoadingView
+					visible={this.state.loading}/>
+
+				<CurrentlyPlaying
+					updateMediaState={this.props.updateMediaState}/>
 
 			</ViewContainer>
 		)
@@ -108,6 +114,9 @@ class Home extends Component {
 }
 
 const styles = StyleSheet.create({
+	firstPlaylistBlock: {
+		marginTop: 20,
+	},
 	playlistBlock: {
 		marginBottom: 65
 	}
