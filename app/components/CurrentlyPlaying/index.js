@@ -14,7 +14,8 @@ import {
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
-import { Actions } from 'react-native-router-flux'
+import { Actions } from 'react-native-router-flux'
+import { connect } from 'react-redux'
 
 import MiniPlayer from './MiniPlayer'
 import Player from './Player'
@@ -208,6 +209,7 @@ class CurrentlyPlaying extends Component {
 					!this.state.playerInView
 
 					? <MiniPlayer
+						{...this.props}
 						opacity={this.state.miniPlayerOpacity}
 						openPlayer={this.togglePlayer.bind(this, true)}
 						location={currentPlaying.location}
@@ -218,6 +220,7 @@ class CurrentlyPlaying extends Component {
 				)}
 
 				<Player
+					{...this.props}
 					height={SCREEN_HEIGHT}
 					closePlayer={this.togglePlayer.bind(this, false)}/>
 
@@ -239,4 +242,10 @@ const styles = StyleSheet.create({
 
 })
 
-export default CurrentlyPlaying
+function mapStateToProps(state) {
+	return {
+		mediaIsPlaying: state.mediaIsPlaying
+	}
+}
+
+export default connect(mapStateToProps)(CurrentlyPlaying)

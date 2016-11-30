@@ -10,8 +10,40 @@ import {
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
+import Sound from 'react-native-sound'
+
+let currentAudioTrack
 
 class Player extends Component {
+
+	constructor() {
+		super()
+		this.state = {
+			audioFile: 'https://ia802508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3'
+		}
+	}
+
+	playAudioTrack(track) {
+		console.log('clicked')
+		let currentAudioTrack = new Sound({
+			uri: this.state.audioFile,
+		}, error => {
+			  if (error) {
+			    console.log('failed to load the sound', error);
+			  } else { // loaded successfully
+			    console.log('duration in seconds: ' + currentAudioTrack.getDuration() +
+			        'number of channels: ' + currentAudioTrack.getNumberOfChannels());
+
+			    currentAudioTrack.play(success => {
+				  if (success) {
+				    console.log('successfully finished playing');
+				  } else {
+				    console.log('playback failed due to audio decoding errors');
+				  }
+				})
+			  }
+		})
+	}
 
 	render() {
 		return (
@@ -58,6 +90,19 @@ class Player extends Component {
 							name='ios-list'/>
 					</View>
 
+				</View>
+
+				<View
+					style={{
+						flex: 1,
+						zIndex: 3,
+						backgroundColor: 'blue'
+					}}>
+					<TouchableOpacity
+						onPress={() => {this.playAudioTrack()}}>
+						<Icon
+							name='ios-play'/>
+					</TouchableOpacity>
 				</View>
 
 			</View>

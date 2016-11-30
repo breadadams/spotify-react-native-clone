@@ -55,18 +55,21 @@ class MiniPlayer extends Component {
 						</Text>
 					</View>
 
-					<View
-						style={styles.playBtnWrap}>
+					<TouchableOpacity
+						activeOpacity={1}
+						style={styles.touchableBar}
+						onPress={() => this.props.openPlayer()}/>
+
+					<TouchableOpacity
+						onPress={() => {this.props.updateMediaState(!this.props.mediaIsPlaying)}}
+						style={styles.playBtnWrap}
+						activeOpacity={.85}>
 
 						<Icon
 							style={styles.playBtn}
-							name='ios-pause'/>
-					</View>
+							name={this.props.mediaIsPlaying ? 'ios-pause' : 'ios-play'}/>
+					</TouchableOpacity>
 				</View>
-
-				<TouchableOpacity
-					style={styles.touchableBar}
-					onPress={() => this.props.openPlayer()}/>
 
 			</Animated.View>
 		)
@@ -140,6 +143,7 @@ const styles = StyleSheet.create({
 		borderColor: 'white',
 		alignItems: 'center',
 		justifyContent: 'center',
+		zIndex: 7,
 	},
 
 	playBtn: {
