@@ -18,7 +18,9 @@ export default class ScrollableView extends Component {
 					},
 					this.props.style
 				]}
-				automaticallyAdjustContentInsets={true}>
+				automaticallyAdjustContentInsets={false}
+				scrollEventThrottle={16}
+				onScroll={this.props.onScroll}>
 
 				{this.props.children}
 
