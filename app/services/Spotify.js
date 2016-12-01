@@ -314,6 +314,13 @@ class SpotifyWebApi {
 		return this.get(null, `/browse/categories?${params}`, accessToken)
 	}
 
+
+
+	static getPlaylist(accessToken, userID, playlistID) {
+
+		return this.get(null, `/users/${userID}/playlists/${playlistID}`, accessToken)
+	}
+
 }
 
 export default SpotifyWebApi
