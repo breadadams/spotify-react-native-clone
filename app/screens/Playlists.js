@@ -30,7 +30,8 @@ class Playlists extends Component {
 	}
 
 	componentDidMount() {
-		SpotifyWebApi.getFeaturedPlaylists(this.props.accessToken, 'ES', (res) => {
+		SpotifyWebApi.getFeaturedPlaylists(this.props.accessToken, 'GB').then( res => {
+			// console.log(res)
 			if ( res && !(res.error) ) {
 				this.setState({
 					playlistItems: this.state.playlistItems.cloneWithRows(res.playlists.items),
@@ -38,13 +39,35 @@ class Playlists extends Component {
 				})
 			}
 		}).done()
-		SpotifyWebApi.getCategories(this.props.accessToken, (res) => {
+
+		SpotifyWebApi.getCategories(this.props.accessToken, 'GB', 'es_ES', 4).then(res => {
 			if ( res && !(res.error) ) {
 				this.setState({
 					categoryItems: this.state.categoryItems.cloneWithRows(res.categories.items),
 				})
 			}
 		}).done()
+
+		SpotifyWebApi.getUserTop(this.props.accessToken, 'artists', 5).then(res => {
+			let artistsSeeds = [];
+			for ( let artist of res.items ) {
+				artistsSeeds.push(artist.id)
+			}
+
+			let seeds = {
+				artists: artistsSeeds.join(',')
+			}
+
+			SpotifyWebApi.getRecommendations(this.props.accessToken, seeds).then(res => {
+				console.log(res);
+			})
+
+		}).done()
+
+		SpotifyWebApi.getNewReleases(this.props.accessToken, 'GB', 5, 5).then(res => {
+			// console.log(res)
+		})
+
 	}
 
 	render() {

@@ -92,16 +92,23 @@ class Player extends Component {
 
 				</View>
 
+				<View style={{flex: 1}}/>
+
 				<View
 					style={{
-						flex: 1,
 						zIndex: 3,
-						backgroundColor: 'blue'
+						backgroundColor: 'transparent',
+						alignItems: 'center',
+						paddingVertical: 5,
 					}}>
 					<TouchableOpacity
 						onPress={() => {this.playAudioTrack()}}>
 						<Icon
-							name='ios-play'/>
+							name='ios-play'
+							style={{
+								fontSize: 40,
+								color: 'white',
+							}}/>
 					</TouchableOpacity>
 				</View>
 

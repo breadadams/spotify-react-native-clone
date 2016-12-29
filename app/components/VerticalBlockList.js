@@ -5,8 +5,11 @@ import {
 	ListView,
 	Text,
 	Image,
-	StyleSheet
+	StyleSheet,
+	TouchableOpacity
 } from 'react-native'
+
+import { Actions } from 'react-native-router-flux'
 
 export default class VerticalBlockList extends Component {
 
@@ -29,7 +32,7 @@ export default class VerticalBlockList extends Component {
 		return(
 			<Image
 				source={{uri: itemImg}}
-				style={styles.listItemImg}/>
+				style={this.props.displayTitles == 'below' ? styles.listItemImg : StyleSheet.absoluteFill}/>
 		)
 	}
 
@@ -37,9 +40,18 @@ export default class VerticalBlockList extends Component {
 		if ( this.props.displayTitles && title ) {
 			return(
 				<Text
-					style={styles.listItemTitle}>
+					numberOfLines={1}
+					style={this.props.displayTitles == 'below' ? styles.listItemTitleBelow : styles.listItemTitle}>
 					{title}
 				</Text>
+			)
+		}
+	}
+
+	listItemMeta(meta) {
+		if ( this.props.displayMeta && meta ) {
+			return(
+				<Text style={styles.listItemMeta}>{`Meta`}</Text>
 			)
 		}
 	}
@@ -47,9 +59,22 @@ export default class VerticalBlockList extends Component {
 	renderListItem(item) {
 		return(
 			<View
-				style={styles.scrollListItem}>
-				{this.backgroundImage(item)}
-				{this.listItemTitle(item.name)}
+				style={[styles.scrollListItem, this.props.displayTitles !== 'below' ? {
+					height: 160
+				} : null]}>
+
+				<TouchableOpacity
+					onPress={() => {
+						Actions.homeMediaList({
+							title: item.name,
+							contentType: item.type,
+							mediaObject: item
+						})
+					}}>
+					{this.backgroundImage(item)}
+					{this.listItemTitle(item.name)}
+					{this.listItemMeta(item.meta)}
+				</TouchableOpacity>
 			</View>
 		)
 	}
@@ -81,10 +106,10 @@ const styles = StyleSheet.create({
 
 	rowTitle: {
 		textAlign: 'center',
-		fontWeight: '300',
-		fontSize: 16,
-		letterSpacing: 2,
+		fontWeight: '700',
+		fontSize: 18,
 		marginBottom: 15,
+		color: 'white',
 	},
 
 	horizontalScrollWrap: {
@@ -95,22 +120,25 @@ const styles = StyleSheet.create({
 	},
 
 	scrollListItem: {
-		// width: 150,
-		height: 160,
 		flexBasis: 160,
 		flex: 1,
-		backgroundColor: 'green',
 		marginRight: 15,
-		backgroundColor: '#eaeaea',
-		marginBottom: 15,
+		marginBottom: 20,
+		alignItems: 'stretch',
+		minHeight: 1,
+		maxHeight: 200,
 	},
 
 	listItemImg: {
-		position: 'absolute',
-		left: 0,
-		top: 0,
-		right: 0,
-		bottom: 0,
+		marginBottom: 5,
+		height: 160,
+	},
+
+	listItemTitleBelow: {
+		textAlign: 'center',
+		color: 'white',
+		fontWeight: '700',
+		backgroundColor: 'transparent'
 	},
 
 	listItemTitle: {
@@ -118,10 +146,17 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 15,
-		backgroundColor: 'transparent',
 		textAlign: 'center',
-		color: '#ffffff',
+		color: 'white',
 		fontWeight: '500',
+		backgroundColor: 'transparent',
+	},
+
+	listItemMeta: {
+		color: 'white',
+		textAlign: 'center',
+		opacity: .75,
+		marginTop: 4,
 	}
 })
 

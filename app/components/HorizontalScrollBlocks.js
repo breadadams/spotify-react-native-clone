@@ -5,8 +5,11 @@ import {
 	ListView,
 	Text,
 	Image,
-	StyleSheet
+	StyleSheet,
+	TouchableOpacity
 } from 'react-native'
+
+import { Actions } from 'react-native-router-flux'
 
 export default class HorizontalScrollBlocks extends Component {
 
@@ -63,14 +66,21 @@ export default class HorizontalScrollBlocks extends Component {
 		return(
 			<View
 				style={styles.listItem}>
-				<View
+				<TouchableOpacity
+					onPress={() => {
+						Actions.homeMediaList({
+							title: item.name,
+							contentType: item.type,
+							mediaObject: item
+						})
+					}}
 					style={[
 						styles.listItemImgWrap,
 						item.type == 'artist' ? styles.listItemImgWrapRound : null
 					]}>
 					{this._backgroundImage(item)}
 					{this._overlayTitle(item.name)}
-				</View>
+				</TouchableOpacity>
 				{this._bottomContent(item.name)}
 			</View>
 		)

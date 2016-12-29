@@ -16,6 +16,7 @@ import Home from '../screens/Home'
 import TestPage from '../screens/TestPage'
 import Playlists from '../screens/Playlists'
 import Splash from '../screens/Splash'
+import MediaList from '../screens/MediaList'
 
 import SpotifyWebApi from '../services/Spotify'
 
@@ -52,6 +53,7 @@ class NavRouter extends Component {
 							title='Home'
 							navigationBarStyle={styles.mainNavbar}
 							titleStyle={styles.mainNavbarTitle}
+							leftButtonIconStyle={{tintColor: 'white'}}
 							initial>
 
 							<Scene
@@ -59,6 +61,11 @@ class NavRouter extends Component {
 								key='homeScreen'
 								component={Home}
 								title='HOME'/>
+
+							<Scene
+								{...this.props}
+								key='homeMediaList'
+								component={MediaList}/>
 
 						</Scene>
 

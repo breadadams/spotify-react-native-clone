@@ -62,15 +62,9 @@ export default class PullBlurHeader extends Component {
 							transform: [{translateY: this.props.topScroll * -.1}],
 							opacity: 1 - (this.props.topScroll/-40)
 						}}>
-						<Image
-							style={styles.headerImg}
-							resizeMode='cover'
-							source={{uri: this.props.img}}/>
 
-						<Text
-							style={styles.headerTitle}>
-							{this.props.title}
-						</Text>
+						{this.props.children}
+
 					</View>
 				</View>
 			</View>
@@ -79,9 +73,12 @@ export default class PullBlurHeader extends Component {
 }
 
 PullBlurHeader.propTypes = {
-	title: React.PropTypes.string,
 	img: React.PropTypes.string,
-	topScroll: React.PropTypes.number
+	topScroll: React.PropTypes.number,
+}
+
+PullBlurHeader.defaultProps = {
+	topScroll: 0,
 }
 
 const styles = StyleSheet.create({
@@ -108,20 +105,6 @@ const styles = StyleSheet.create({
 		top: 0,
 		bottom: 0,
 		right: 0,
-	},
-
-	headerImg: {
-		width: 100,
-		height: 100,
-		borderRadius: 50,
-		marginBottom: 10,
-		backgroundColor: '#adadad',
-		alignSelf: 'center',
-	},
-
-	headerTitle: {
-		backgroundColor: 'transparent',
-		color: 'white',
-		textAlign: 'center',
 	}
+
 })

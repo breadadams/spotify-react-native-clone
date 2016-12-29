@@ -18,7 +18,7 @@ const STATE_KEY = 'spotify_auth_state'
 const ACCESS_TOKEN_KEY = 'access_token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
 const ACCESS_EXPIRY_KEY = 'access_token_expiry'
-const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read'
+const SCOPE = 'user-read-private playlist-read-private user-top-read user-library-read playlist-modify-public playlist-modify-private'
 
 const SPOTIFY_API_URL = 'https://api.spotify.com/v1'
 const spotifyAccountURL = 'https://accounts.spotify.com/authorize?'
@@ -32,18 +32,22 @@ const COUNTRY = LOCALE.slice(-2)
 
 class SpotifyWebApi {
 
-	static headers(accessToken) {
+	static headers(accessToken, verb) {
 
 		let headers
 
 		if ( accessToken ) {
 			headers = {
 				'Authorization': 'Bearer ' + accessToken,
+				'Content-Type': 'application/json',
+			}
+			if ( verb == 'PUT' ) {
+				headers['Content-length'] = 16
 			}
 		} else {
 			headers = {
 				'Accept': 'application/x-www-form-urlencoded',
-				'Content-Type':'application/x-www-form-urlencoded',
+				'Content-Type': 'application/x-www-form-urlencoded',
 				'Authorization': 'Basic ' + (new Buffer(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')),
 			}
 		}
@@ -55,13 +59,20 @@ class SpotifyWebApi {
 		return this.xhr(url, route, null, 'GET', accessToken)
 	}
 
+	static put(url, route, accessToken) {
+		return this.xhr(url, route, null, 'PUT', accessToken)
+	}
+
+	static delete(url, route, accessToken) {
+		return this.xhr(url, route, null, 'DELETE', accessToken)
+	}
+
 	static xhr(url, route, params, verb, accessToken) {
 		const targetUrl = (url ? url : SPOTIFY_API_URL) + route
 		let options = Object.assign(
-			{ method: verb },
-			params ? { body: JSON.stringify(params) } : null
+			{ method: verb, headers: SpotifyWebApi.headers(accessToken, verb) },
+			params ? ( verb == 'PUT' ? { body: JSON.stringify(params) } : { body: JSON.stringify(params) } ) : null,
 		)
-		options.headers = SpotifyWebApi.headers(accessToken)
 		return fetch(targetUrl, options).then( resp => {
 			let json = resp.json()
 			if ( resp.ok ) {
@@ -316,10 +327,97 @@ class SpotifyWebApi {
 
 
 
-	static getPlaylist(accessToken, userID, playlistID) {
+	// Get playlist data, takes ownerID (playlist owner) and playlistID
+	static getPlaylist(accessToken, ownerID, playlistID) {
 
-		return this.get(null, `/users/${userID}/playlists/${playlistID}`, accessToken)
+		return this.get(null, `/users/${ownerID}/playlists/${playlistID}`, accessToken)
+
 	}
+
+
+
+	// Check whether user follows a playlist, takes ownerID (playlist owner), playlistID & userIDs (comma seperated, users you want to check follow, max 5)
+	static doesFollowPlaylist(accessToken, ownerID, playlistID, userIDs = '') {
+
+		let params = [
+			`ids=${userIDs}`,
+		].join('&');
+
+		return this.get(null, `/users/${ownerID}/playlists/${playlistID}/followers/contains?${params}`, accessToken)
+
+	}
+
+
+
+	// Follow a playlist, takes ownerID (playlist owner), playlistID and makePublic (bool, whether to follow publicly or privately)
+	static followPlaylist(accessToken, ownerID, playlistID, makePublic = true) {
+
+		// let params = [
+		// 	`public=${makePublic}`,
+		// ]
+		// let params = {
+		// 	public: makePublic
+		// }
+
+		return this.put(null, `/users/${ownerID}/playlists/${playlistID}/followers`, accessToken)
+	}
+
+	// Follow a playlist, takes ownerID (playlist owner), playlistID and makePublic (bool, whether to follow publicly or privately)
+	static followPlaylist(accessToken, ownerID, playlistID) {
+
+		return this.delete(null, `/users/${ownerID}/playlists/${playlistID}/followers`, accessToken)
+	}
+
+
+
+	// Get artists albums
+	static getArtistAlbums(accessToken, artistID = 0, market = 'US', albumType = 'album', limit = 10, offset = 0) {
+
+		let params = [
+			`album_type=${albumType}`,
+			`market=${market}`,
+			`limit=${limit}`,
+			`offset=${offset}`
+		].join('&');
+
+		return this.get(null, `/artists/${artistID}/albums?${params}`, accessToken);
+
+	}
+
+
+	// Get artists top tracks
+	static getArtistsTopTracks(accessToken, artistID, country = 'US') {
+
+		let params = [
+			`country=${country}`
+		].join('&');
+
+		return this.get(null, `/artists/${artistID}/top-tracks?${params}`, accessToken);
+
+	}
+
+
+	// Get artists related artists
+	static getArtistsRelatedArtists(accessToken, artistID) {
+		return this.get(null,  `/artists/${artistID}/related-artists`, accessToken);
+	}
+
+
+
+	// Get albums tracks
+	static getAlbumsTracks(accessToken, albumID, limit = 20, offset = 0, market = 'US') {
+
+		let params = [
+			`market=${market}`,
+			`limit=${limit}`,
+			`offset=${offset}`
+		].join('&');
+
+		return this.get(null, `/albums/${albumID}/tracks?${params}`, accessToken);
+
+	}
+
+
 
 }
 
