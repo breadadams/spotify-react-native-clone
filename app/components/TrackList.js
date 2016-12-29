@@ -4,10 +4,12 @@ import {
 	View,
 	ListView,
 	Text,
-	StyleSheet
+	StyleSheet,
+	TouchableOpacity
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
+import { ReactNativeAudioStreaming } from 'react-native-audio-streaming'
 
 export default class TrackList extends Component {
 
@@ -33,18 +35,25 @@ export default class TrackList extends Component {
 	}
 
 	trackMetaRow(track) {
-		if ( this.props.popularTracks ) {
+		if ( this.props.popularTracks && track.popularity ) {
 			return (
-				<Text
-					style={styles.trackMeta}
-					numberOfLines={1}>
-					{`${track.popularity}% popularity`}
-				</Text>
+				<View
+					style={styles.trackPopularity}>
+					<Icon
+						name='ios-thumbs-up'
+						style={styles.trackPopularityIcon}/>
+					<View
+						style={[styles.ratingBar, {
+							paddingRight: 10 + (parseFloat(100 - track.popularity))
+						}]}>
+						<View style={styles.ratingBarMarker}/>
+					</View>
+				</View>
 			)
 		} else {
 			return (
 				<Text
-					style={styles.trackMeta}
+					style={styles.trackArtist}
 					numberOfLines={1}>
 					{track.artists[0].name}
 				</Text>
@@ -52,27 +61,43 @@ export default class TrackList extends Component {
 		}
 	}
 
+	playTrackPreview(previewURL) {
+
+		ReactNativeAudioStreaming.play(previewURL, {showIniOSMediaCenter: false});
+
+	}
+
+	stopTrackPreview() {
+		ReactNativeAudioStreaming.stop();
+	}
+
 	renderTrack(trackObject, sectionID, rowID) {
 
 		let track = trackObject['track'] || trackObject;
 
 		return (
-			<View style={styles.trackRow}>
-				{this.trackNumber(rowID)}
-				<View style={styles.trackDetails}>
-					<Text
-						style={styles.trackTitle}
-						numberOfLines={1}>
-						{track.name}
-					</Text>
-					{this.trackMetaRow(track)}
+			<TouchableOpacity
+				onLongPress={() => {this.playTrackPreview(track.preview_url)}}
+				onPressOut={() => {this.stopTrackPreview()}}>
+
+				<View style={styles.trackRow}>
+
+					{this.trackNumber(rowID)}
+					<View style={styles.trackDetails}>
+						<Text
+							style={styles.trackTitle}
+							numberOfLines={1}>
+							{track.name}
+						</Text>
+						{this.trackMetaRow(track)}
+					</View>
+					<View style={styles.trackMore}>
+						<Icon
+							style={styles.trackMoreIcon}
+							name='ios-more'/>
+					</View>
 				</View>
-				<View style={styles.trackMore}>
-					<Icon
-						style={styles.trackMoreIcon}
-						name='ios-more'/>
-				</View>
-			</View>
+			</TouchableOpacity>
 		)
 
 	}
@@ -107,10 +132,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 
-	trackDetails: {
-		flex: 1,
-	},
-
 	trackNumber: {
 		width: 20,
 		alignItems: 'stretch',
@@ -124,17 +145,49 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 
+	trackDetails: {
+		flex: 1,
+		alignItems: 'flex-start',
+	},
+
 	trackTitle: {
 		color: 'white',
-		marginBottom: 3,
+		marginBottom: 2,
 		fontSize: 16,
 		fontWeight: '500',
 	},
 
-	trackMeta: {
-		color: 'white',
+	trackArtist: {
+		color: 'rgba(255,255,255,.75)',
+		fontSize: 13,
+	},
+
+	trackPopularity: {
+		marginTop: 2,
+		backgroundColor: 'rgba(255,255,255,.4)',
+		borderRadius: 12,
+		paddingLeft: 8,
+		paddingVertical: 2,
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+
+	trackPopularityIcon: {
+		color: 'rgba(255,255,255,.8)',
 		fontSize: 12,
-		opacity: .8,
+		marginRight: 10,
+		top: .5,
+	},
+
+	ratingBar: {
+		width: 100,
+		justifyContent: 'center',
+	},
+
+	ratingBarMarker: {
+		height: 8,
+		backgroundColor: 'rgba(255,255,255,.9)',
+		borderRadius: 10,
 	},
 
 	trackMore: {

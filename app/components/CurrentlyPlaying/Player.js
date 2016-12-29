@@ -10,7 +10,8 @@ import {
 } from 'react-native'
 
 import Icon from 'react-native-vector-icons/Ionicons'
-import Sound from 'react-native-sound'
+
+import { ReactNativeAudioStreaming } from 'react-native-audio-streaming'
 
 let currentAudioTrack
 
@@ -25,24 +26,8 @@ class Player extends Component {
 
 	playAudioTrack(track) {
 		console.log('clicked')
-		let currentAudioTrack = new Sound({
-			uri: this.state.audioFile,
-		}, error => {
-			  if (error) {
-			    console.log('failed to load the sound', error);
-			  } else { // loaded successfully
-			    console.log('duration in seconds: ' + currentAudioTrack.getDuration() +
-			        'number of channels: ' + currentAudioTrack.getNumberOfChannels());
 
-			    currentAudioTrack.play(success => {
-				  if (success) {
-				    console.log('successfully finished playing');
-				  } else {
-				    console.log('playback failed due to audio decoding errors');
-				  }
-				})
-			  }
-		})
+		ReactNativeAudioStreaming.play(this.state.audioFile, {showIniOSMediaCenter: true});
 	}
 
 	render() {
