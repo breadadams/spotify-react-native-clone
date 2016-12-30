@@ -20,6 +20,8 @@ import TrackList from '../components/TrackList'
 import VerticalBlockList from '../components/VerticalBlockList'
 import SpotifyWebApi from '../services/Spotify'
 
+import { RelatedArtists } from '../components/MediaViews/Artists'
+
 class MediaList extends Component {
 
 	constructor() {
@@ -63,15 +65,9 @@ class MediaList extends Component {
 							tracks={this.state.popularTracks}
 							popularTracks/>
 
-						<View
-							style={styles.relatedArtistsWrap}>
-							<Text style={styles.relatedArtistsTitle}>{`Related Artists`}</Text>
-							<Text
-								style={styles.relatedArtistText}
-								numberOfLines={2}>
-								{this.state.relatedArtists}
-							</Text>
-						</View>
+						<RelatedArtists
+							accessToken={this.props.accessToken}
+							artistID={this.props.mediaObject.id}/>
 
 						<VerticalBlockList
 							title='Albums'
