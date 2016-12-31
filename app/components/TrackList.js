@@ -5,6 +5,7 @@ import {
 	ListView,
 	Text,
 	StyleSheet,
+	TouchableHighlight,
 	TouchableOpacity
 } from 'react-native'
 
@@ -76,7 +77,9 @@ export default class TrackList extends Component {
 		let track = trackObject['track'] || trackObject;
 
 		return (
-			<TouchableOpacity
+			<TouchableHighlight
+				activeOpacity={.75}
+				underlayColor={'rgba(255,255,255,.075)'}
 				onLongPress={() => {this.playTrackPreview(track.preview_url)}}
 				onPressOut={() => {this.stopTrackPreview()}}>
 
@@ -91,20 +94,24 @@ export default class TrackList extends Component {
 						</Text>
 						{this.trackMetaRow(track)}
 					</View>
-					<View style={styles.trackMore}>
+					<TouchableOpacity
+						style={styles.trackMore}
+						activeOpacity={.75}
+						onPress={() => alert('test')}>
 						<Icon
 							style={styles.trackMoreIcon}
 							name='ios-more'/>
-					</View>
+					</TouchableOpacity>
 				</View>
-			</TouchableOpacity>
+			</TouchableHighlight>
 		)
 
 	}
 
 	render() {
 		return (
-			<View>
+			<View
+				style={styles.trackListWrap}>
 
 				{this.trackListTitle()}
 
@@ -117,12 +124,17 @@ export default class TrackList extends Component {
 }
 
 const styles = StyleSheet.create({
+	trackListWrap: {
+		marginTop: 10,
+	},
+
 	trackListTitle: {
 		textAlign: 'center',
 		color: 'white',
 		fontWeight: '700',
 		fontSize: 18,
-		marginTop: 20,
+		marginTop: 15,
+		marginBottom: 10,
 	},
 
 	trackRow: {
@@ -163,17 +175,17 @@ const styles = StyleSheet.create({
 	},
 
 	trackPopularity: {
-		marginTop: 2,
-		backgroundColor: 'rgba(255,255,255,.4)',
+		marginTop: 4,
+		backgroundColor: 'rgba(255,255,255,.2)',
 		borderRadius: 12,
 		paddingLeft: 8,
-		paddingVertical: 2,
+		paddingVertical: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
 
 	trackPopularityIcon: {
-		color: 'rgba(255,255,255,.8)',
+		color: 'rgba(255,255,255,.5)',
 		fontSize: 12,
 		marginRight: 10,
 		top: .5,
@@ -186,7 +198,7 @@ const styles = StyleSheet.create({
 
 	ratingBarMarker: {
 		height: 8,
-		backgroundColor: 'rgba(255,255,255,.9)',
+		backgroundColor: 'rgba(255,255,255,.75)',
 		borderRadius: 10,
 	},
 
