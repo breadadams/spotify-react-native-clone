@@ -65,6 +65,7 @@ class NavRouter extends Component {
 							<Scene
 								{...this.props}
 								key='homeMediaList'
+								navigationBarStyle={[styles.mainNavbar, styles.mainNavbarStartOpaque]}
 								component={MediaList}/>
 
 							<Scene

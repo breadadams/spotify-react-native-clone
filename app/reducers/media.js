@@ -7,3 +7,10 @@ export const mediaIsPlaying = createReducer(true,
 		return action.mediaIsPlaying
 	}
 })
+
+export const trackQueue = createReducer([],
+{
+	[types.UPDATE_TRACK_QUEUE](state, action) {
+		return action.trackQueue
+	}
+})

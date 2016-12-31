@@ -9,10 +9,11 @@ import {
 	TouchableOpacity
 } from 'react-native'
 
+import { connect } from 'react-redux'
 import Icon from 'react-native-vector-icons/Ionicons'
 import { ReactNativeAudioStreaming } from 'react-native-audio-streaming'
 
-export default class TrackList extends Component {
+class TrackList extends Component {
 
 	trackListTitle() {
 		if ( this.props.title ) {
@@ -72,6 +73,18 @@ export default class TrackList extends Component {
 		ReactNativeAudioStreaming.stop();
 	}
 
+	playTrack(track) {
+
+		let queuePreperation = []
+
+		queuePreperation.push(track)
+
+		this.props.updateTrackQueue(queuePreperation, this.props.trackQueue)
+
+		// console.log(this.props.trackQueue)
+		// console.log(queuePreperation)
+	}
+
 	renderTrack(trackObject, sectionID, rowID) {
 
 		let track = trackObject['track'] || trackObject;
@@ -81,7 +94,8 @@ export default class TrackList extends Component {
 				activeOpacity={.75}
 				underlayColor={'rgba(255,255,255,.075)'}
 				onLongPress={() => {this.playTrackPreview(track.preview_url)}}
-				onPressOut={() => {this.stopTrackPreview()}}>
+				onPressOut={() => {this.stopTrackPreview()}}
+				onPress={() => {this.playTrack(track)}}>
 
 				<View style={styles.trackRow}>
 
@@ -217,3 +231,11 @@ const styles = StyleSheet.create({
 		top: 1,
 	}
 })
+
+function mapStateToProps(state) {
+	return {
+		trackQueue: state.trackQueue
+	}
+}
+
+export default connect(mapStateToProps)(TrackList)

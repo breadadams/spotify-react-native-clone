@@ -8,6 +8,7 @@ import {
 } from 'react-native'
 
 import { connect } from 'react-redux'
+import { Actions } from 'react-native-router-flux'
 
 import ViewContainer from '../components/ViewContainer'
 import ScrollableView from '../components/ScrollableView'
@@ -62,7 +63,9 @@ class MediaList extends Component {
 						<TrackList
 							title='Popular'
 							tracks={this.state.popularTracks}
-							popularTracks/>
+							popularTracks
+							updateTrackQueue={this.props.updateTrackQueue}
+							trackQueue={this.props.trackQueue}/>
 
 						<MiniRelatedArtists
 							accessToken={this.props.accessToken}

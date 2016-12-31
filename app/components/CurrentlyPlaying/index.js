@@ -213,8 +213,9 @@ class CurrentlyPlaying extends Component {
 						opacity={this.state.miniPlayerOpacity}
 						openPlayer={this.togglePlayer.bind(this, true)}
 						location={currentPlaying.location}
-						artist={currentPlaying.artist}
-						track={currentPlaying.track}/>
+						artist={this.props.trackQueue[0] ? this.props.trackQueue[0].artists[0].name : currentPlaying.artist}
+						track={this.props.trackQueue[0] ? this.props.trackQueue[0].name : currentPlaying.track}
+						/>
 
 					: null
 				)}
@@ -244,7 +245,8 @@ const styles = StyleSheet.create({
 
 function mapStateToProps(state) {
 	return {
-		mediaIsPlaying: state.mediaIsPlaying
+		mediaIsPlaying: state.mediaIsPlaying,
+		trackQueue: state.trackQueue
 	}
 }
 

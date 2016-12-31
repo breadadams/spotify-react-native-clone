@@ -27,7 +27,7 @@ class Player extends Component {
 	playAudioTrack(track) {
 		console.log('clicked')
 
-		ReactNativeAudioStreaming.play(this.state.audioFile, {showIniOSMediaCenter: true});
+		// ReactNativeAudioStreaming.play(this.state.audioFile, {showIniOSMediaCenter: true});
 	}
 
 	render() {
