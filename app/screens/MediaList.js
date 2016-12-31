@@ -37,7 +37,6 @@ class MediaList extends Component {
 			popularTracks: new ListView.DataSource({
 				rowHasChanged: (r1, r2) => r1 !== r2
 			}),
-			relatedArtists: '',
 			loading: true,
 			isFollowing: false,
 		}
@@ -110,61 +109,43 @@ class MediaList extends Component {
 			})
 			.done()
 		} else if ( this.props.contentType == 'artist' ) {
-			SpotifyWebApi.getArtistsRelatedArtists(this.props.accessToken, this.props.mediaObject.id)
+			SpotifyWebApi.getArtistsTopTracks(this.props.accessToken, this.props.mediaObject.id)
 			.then(response => {
-
-				let relatedArtists = [];
-
-				response.artists.forEach(artist => {
-					relatedArtists.push(artist.name);
-				})
-
 				this.setState({
-					relatedArtists: relatedArtists.join(', ')
+					popularTracks: this.state.popularTracks.cloneWithRows(response.tracks.splice(0,5))
 				}, () => {
-					SpotifyWebApi.getArtistsTopTracks(this.props.accessToken, this.props.mediaObject.id)
-					.then(response => {
+					SpotifyWebApi.getArtistAlbums(this.props.accessToken, this.props.mediaObject.id, undefined, 'album', 4)
+					.then(albums => {
+
+						let newAlbums = {};
+							
+						albums.items.forEach((album, i) => {
+							newAlbums[i] = {
+								id: album.id,
+								name: album.name,
+								type: album.type,
+								images: [
+									{
+										url: album.images[0].url
+									},
+								]
+							}
+						})
+
 						this.setState({
-							popularTracks: this.state.popularTracks.cloneWithRows(response.tracks.splice(0,5))
-						}, () => {
-							SpotifyWebApi.getArtistAlbums(this.props.accessToken, this.props.mediaObject.id, undefined, 'album', 4)
-							.then(albums => {
-
-								let newAlbums = {};
-									
-								albums.items.forEach((album, i) => {
-									newAlbums[i] = {
-										id: album.id,
-										name: album.name,
-										type: album.type,
-										images: [
-											{
-												url: album.images[0].url
-											},
-										]
-									}
-								})
-
-								this.setState({
-									albums: this.state.albums.cloneWithRows(newAlbums),
-									loading: false,
-								})
-							})
-							.catch(err => {
-								// console.log(err)
-							})
-							.done()
+							albums: this.state.albums.cloneWithRows(newAlbums),
+							loading: false,
 						})
 					})
 					.catch(err => {
 						// console.log(err)
-					}).done()
+					})
+					.done()
 				})
 			})
 			.catch(err => {
 				// console.log(err)
-			})
-			.done()
+			}).done()
 		} else {
 			SpotifyWebApi.getAlbumsTracks(this.props.accessToken, this.props.mediaObject.id)
 			.then(response => {
@@ -188,6 +169,16 @@ class MediaList extends Component {
 			if ( this.state.negativeTopScroll !== 0 ) {
 				this.setState({negativeTopScroll: 0})
 			}
+
+			if ( event.nativeEvent.contentOffset.y > 220 ) {
+				if ( ((event.nativeEvent.contentOffset.y - 220) / 20) < 1.01 ) {
+					Actions.refresh({ navigationBarStyle: {opacity: ((event.nativeEvent.contentOffset.y - 220) / 20)} })
+				} else {
+					// Do nothing
+				}
+			} else {
+				Actions.refresh({ navigationBarStyle: {opacity: 0} })
+			}
 		}
 	}
 
@@ -196,6 +187,7 @@ class MediaList extends Component {
 			<ViewContainer>
 
 				<ScrollableView
+					paddingTop={0}
 					onScroll={(event) => {this._handleScroll(event)}}>
 
 					<PlaylistHeader
@@ -229,26 +221,7 @@ class MediaList extends Component {
 }
 
 const styles = StyleSheet.create({
-	relatedArtistsWrap: {
-		paddingHorizontal: 10,
-		marginTop: 40,
-		marginBottom: 30,
-	},
 
-	relatedArtistsTitle: {
-		textAlign: 'center',
-		color: 'white',
-		fontWeight: '700',
-		fontSize: 18,
-		marginBottom: 15,
-	},
-
-	relatedArtistText: {
-		color: 'white',
-		lineHeight: 16,
-		fontSize: 13,
-		fontWeight: '500',
-	}
 })
 
 function mapStateToProps(state) {
