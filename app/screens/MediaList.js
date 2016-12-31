@@ -54,7 +54,8 @@ class MediaList extends Component {
 			case 'playlist':
 				return(
 					<TrackList
-						tracks={this.state.tracks}/>
+						tracks={this.state.tracks}
+						updateTrackQueue={this.props.updateTrackQueue}/>
 				)
 
 			case 'artist':
@@ -64,8 +65,7 @@ class MediaList extends Component {
 							title='Popular'
 							tracks={this.state.popularTracks}
 							popularTracks
-							updateTrackQueue={this.props.updateTrackQueue}
-							trackQueue={this.props.trackQueue}/>
+							updateTrackQueue={this.props.updateTrackQueue}/>
 
 						<MiniRelatedArtists
 							accessToken={this.props.accessToken}
@@ -82,7 +82,8 @@ class MediaList extends Component {
 			case 'album':
 				return(
 					<TrackList
-						tracks={this.state.tracks}/>
+						tracks={this.state.tracks}
+						updateTrackQueue={this.props.updateTrackQueue}/>
 				)
 
 			default:

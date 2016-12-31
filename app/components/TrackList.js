@@ -123,6 +123,7 @@ class TrackList extends Component {
 	}
 
 	render() {
+
 		return (
 			<View
 				style={styles.trackListWrap}>

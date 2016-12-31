@@ -38,7 +38,7 @@ class Player extends Component {
 				}]}>
 
 				<Image
-					source={{uri: 'http://resources.wimpmusic.com/images/9444c677/0309/46ce/a238/a6928b1babf6/1280x1280.jpg'}}
+					source={this.props.trackQueue[0] ? (this.props.trackQueue[0].album.images ? {uri: this.props.trackQueue[0].album.images[0].url} : {uri: 'http://resources.wimpmusic.com/images/9444c677/0309/46ce/a238/a6928b1babf6/1280x1280.jpg'}) : {uri: 'http://resources.wimpmusic.com/images/9444c677/0309/46ce/a238/a6928b1babf6/1280x1280.jpg'}}
 					style={styles.playerBg}
 					blurRadius={50}/>
 
@@ -77,7 +77,12 @@ class Player extends Component {
 
 				</View>
 
-				<View style={{flex: 1}}/>
+				<View style={{flex: 1, zIndex: 4}}>
+
+					<Image
+						source={this.props.trackQueue[0] ? (this.props.trackQueue[0].album.images ? {uri: this.props.trackQueue[0].album.images[0].url} : {uri: 'http://resources.wimpmusic.com/images/9444c677/0309/46ce/a238/a6928b1babf6/1280x1280.jpg'}) : {uri: 'http://resources.wimpmusic.com/images/9444c677/0309/46ce/a238/a6928b1babf6/1280x1280.jpg'}}
+						style={styles.trackArtwork}/>
+				</View>
 
 				<View
 					style={{
@@ -171,6 +176,13 @@ const styles = StyleSheet.create({
 		color: 'rgba(255,255,255,.5)',
 		fontSize: 32,
 	},
+
+	trackArtwork: {
+		width: 300,
+		height: 300,
+		alignSelf: 'center',
+		marginTop: 20,
+	}
 
 })
 
