@@ -1,5 +1,5 @@
 'use strict'
-import React, { Component} from 'react'
+import React, { Component } from 'react'
 import {
 	ScrollView
 } from 'react-native'

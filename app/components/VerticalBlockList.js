@@ -32,7 +32,7 @@ export default class VerticalBlockList extends Component {
 		return(
 			<Image
 				source={{uri: itemImg}}
-				style={this.props.displayTitles == 'below' ? styles.listItemImg : StyleSheet.absoluteFill}/>
+				style={[this.props.displayTitles == 'below' ? styles.listItemImg : StyleSheet.absoluteFill, item.type == 'artist' ? styles.listItemImgRound : '']}/>
 		)
 	}
 
@@ -64,6 +64,7 @@ export default class VerticalBlockList extends Component {
 				} : null]}>
 
 				<TouchableOpacity
+					activeOpacity={.65}
 					onPress={() => {
 						Actions.homeMediaList({
 							title: item.name,
@@ -132,6 +133,13 @@ const styles = StyleSheet.create({
 	listItemImg: {
 		marginBottom: 5,
 		height: 160,
+	},
+
+	listItemImgRound: {
+		borderRadius: 70,
+		marginHorizontal: 10,
+		height: 140,
+		marginBottom: 10,
 	},
 
 	listItemTitleBelow: {

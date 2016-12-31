@@ -18,7 +18,7 @@ import Playlists from '../screens/Playlists'
 import Splash from '../screens/Splash'
 import MediaList from '../screens/MediaList'
 
-import SpotifyWebApi from '../services/Spotify'
+import { RelatedArtistsList } from '../components/MediaViews/Artists'
 
 const tabicon = ({selected, title}) => {
 	return(
@@ -66,6 +66,11 @@ class NavRouter extends Component {
 								{...this.props}
 								key='homeMediaList'
 								component={MediaList}/>
+
+							<Scene
+								{...this.props}
+								key='homeRelatedArtists'
+								component={RelatedArtistsList}/>
 
 						</Scene>
 

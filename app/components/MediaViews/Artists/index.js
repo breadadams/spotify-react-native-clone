@@ -1,6 +1,14 @@
 'use strict'
-import React from 'react'
 
-import RelatedArtists from './RelatedArtists'
+// Related Artists Components
+import {
+	MiniRelatedArtists,
+	RelatedArtistsList
+} from './RelatedArtists'
 
-export { RelatedArtists }
+
+// Exports
+export {
+	MiniRelatedArtists,
+	RelatedArtistsList
+}
