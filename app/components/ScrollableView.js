@@ -9,7 +9,7 @@ export default class ScrollableView extends Component {
 		return (
 			<ScrollView
 				contentContainerStyle={{
-					paddingTop: 64,
+					paddingTop: this.props.paddingTop,
 					paddingBottom: 50,
 				}}
 				style={[
@@ -34,5 +34,10 @@ ScrollableView.propTypes = {
 	style: React.PropTypes.oneOfType([
 	    React.PropTypes.object,
 	    React.PropTypes.number,
-    ])
+    ]),
+    paddingTop: React.PropTypes.number,
+}
+
+ScrollableView.defaultProps = {
+	paddingTop: 64
 }
